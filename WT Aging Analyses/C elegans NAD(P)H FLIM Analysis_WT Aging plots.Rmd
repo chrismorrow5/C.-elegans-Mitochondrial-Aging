@@ -138,9 +138,8 @@ datamus <- as.data.frame(subset(datamus, data_mito.Nutrients%in%mynutrients_al))
 myvars2 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
 datamus <- datamus[myvars2]
 
-pca <- prcomp(datamus[,1:4], scale=TRUE)
+pca <- prcomp(datamus[,1:4], scale=FALSE)
 pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datamus$data_mito.Age)
-
 mid<-mean(datamus$data_mito.Age)
 
 #pdf(paste(Sys.Date(), " BWM PCA.pdf"))
@@ -186,12 +185,8 @@ datahyp <- as.data.frame(subset(datahyp, data_mito.Nutrients%in%mynutrients_al))
 myvars2 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
 datahyp <- datahyp[myvars2]
 
-pca <- prcomp(datahyp[,1:4], scale=TRUE)
-pca.var <- pca$sdev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-
+pca <- prcomp(datahyp[,1:4], scale=FALSE)
 pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datahyp$data_mito.Age)
-
 mid<-mean(datahyp$data_mito.Age)
 
 #pdf(paste(Sys.Date(), "Hypodermis PCA.pdf"))
@@ -237,13 +232,8 @@ datapm <- as.data.frame(subset(datapm, data_mito.Nutrients%in%mynutrients_al))
 myvars2 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
 datapm <- datapm[myvars2]
 
-pca <- prcomp(datapm[,1:4], scale=TRUE)
-pca.var <- pca$sdev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-
+pca <- prcomp(datapm[,1:4], scale=FALSE)
 pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datapm$data_mito.Age)
-pcadata
-
 mid<-mean(datapm$data_mito.Age)
 
 #pdf(paste(Sys.Date(), "PM PCA.pdf"))
@@ -309,9 +299,6 @@ data3 <- as.data.frame(subset(data_mito_animal, TissueFullName%in%mytissues_crca
 data <- as.data.frame(subset(data3, Nutrients%in%mynutrients_al))
 data$Condition <- str_c(data$Age," ", data$TissueFullName," ",data$Nutrients)
 
-##Normalize data set##
-data_norm <- data.frame(rescale(data$a1), rescale(data$t1), rescale(data$t2), rescale(log(data$i)), data$Age, data$Tissue, data$Nutrients)
-
 ##Calculate Average Values
 data$Imean <- ave(data$i, data$Condition)
 data$a1mean <- ave(data$a1, data$Condition)
@@ -338,7 +325,6 @@ data_averages <- unique(data[myvars3], by ="Imean")
 
 ##Format Data for Young vs Old plots
 ```{r}
-
 myages_y_o <- c("1","11")
 data_al_youngold <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myages_y_o))
 data_al_youngold <- as.data.frame(subset(data_al_youngold, Nutrients%in%mynutrients_al))
@@ -357,18 +343,16 @@ data_al_youngold_musNAremov$t.bwm.tm <- as.numeric(data_al_youngold_musNAremov$t
 
 #pdf(paste(Sys.Date(),"Plot tm y vs o bwm.pdf"))
   ggplot(data=data_al_youngold_musNAremov, aes(x=Age, y=t.bwm.tm, color=Age))+
-    geom_violin(color="black")+
-    geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  geom_violin(color="black")+
+  geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
   theme_classic(base_size = 30, base_family = "")+
-  #theme(legend.position = "none")+
   ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
   xlab("Age (Days)")+
-    ylim(1,5)+
-    ggtitle("BWM")+
+  ylim(1,5)+
+  ggtitle("BWM")+
   theme(aspect.ratio=1)
 #dev.off()
-
 ```
 
 
@@ -378,15 +362,14 @@ data_al_youngold_hypNAremov$t.h.tm <- as.numeric(data_al_youngold_hypNAremov$t.h
 
 #pdf(paste(Sys.Date(),"Plot tm y vs o hyp.pdf"))
   ggplot(data=data_al_youngold_hypNAremov, aes(x=Age, y=t.h.tm, color="black"))+
-        geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
-    geom_violin(color="black")+
+  geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  geom_violin(color="black")+
   stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
   theme_classic(base_size = 30, base_family = "")+
-  #theme(legend.position = "none")+
   ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
   xlab("Age (Days)")+
-    ggtitle("Hypodermis")+
-     ylim(1,5)+
+  ggtitle("Hypodermis")+
+  ylim(1,5)+
   theme(aspect.ratio=1)
 #dev.off()
 
@@ -398,18 +381,16 @@ data_al_youngold_pmNAremov$pm.tm <- as.numeric(data_al_youngold_pmNAremov$pm.tm)
 
 #pdf(paste(Sys.Date(),"Plot tm y vs o pm.pdf"))
   ggplot(data=data_al_youngold_pmNAremov, aes(x=Age, y=pm.tm, color="black"))+
-    geom_violin(color="black")+
+  geom_violin(color="black")+
   stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
   theme_classic(base_size = 30, base_family = "")+
-  #theme(legend.position = "none")+
-        geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
-    ylim(1,6)+
+  ylim(1,6)+
   xlab("Age (Days)")+
-    ggtitle("PM")+
+  ggtitle("PM")+
   theme(aspect.ratio=1)
 #dev.off()
-
 ```
 
 ##Plot tm y vs o germ##
@@ -424,15 +405,15 @@ data_al_youngoldgerm_germNAremov$Age <- as.character(data_al_youngoldgerm_germNA
 
 #pdf(paste(Sys.Date(),"Plot tm y vs o germ.pdf"))
   ggplot(data=data_al_youngoldgerm_germNAremov, aes(x=Age, y=g.tm, color="black"))+
-    geom_violin(color="black")+
+  geom_violin(color="black")+
   stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
   theme_classic(base_size = 30, base_family = "")+
   #theme(legend.position = "none")+
-        geom_signif(comparisons = list(c("1","9")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  geom_signif(comparisons = list(c("1","9")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
   xlab("Age (Days)")+
-    ylim(1,5)+
-    ggtitle("Germline")+
+  ylim(1,5)+
+  ggtitle("Germline")+
   theme(aspect.ratio=1)
 #dev.off()
 
@@ -453,7 +434,7 @@ ggplot(data_hh_th, aes(x=h.h.tm, y=t.h.tm, col=Age))+
   theme_classic(base_size = 20, base_family = "")+
   ylab(bquote("Caudal Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
   xlab(bquote("Cranial Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
-  theme(aspect.ratio = 1)#+
+  theme(aspect.ratio = 1)
 #dev.off()
 ```
 
@@ -472,7 +453,7 @@ ggplot(data_hm_tm, aes(x=h.bwm.tm, y=t.bwm.tm, col=Age))+
   theme_classic(base_size = 20, base_family = "")+
   ylab(bquote("Caudal BWM B.A./NAD(P)H  " *tau* "m (ns)"))+
   xlab(bquote("Cranial BWM B.A./NAD(P)H  " *tau* "m (ns)"))+
-  theme(aspect.ratio = 1)#+
+  theme(aspect.ratio = 1)
 #dev.off()
 ```
 
@@ -509,7 +490,7 @@ ggplot(data_tm, aes(x=Age, y=t.bwm.tm))+
   theme_classic(base_size = 20, base_family = "")+
   ylab(bquote("B.A./BWM NAD(P)H  " *tau* "m (ns)"))+
   xlab(bquote("Age (Days)"))+
-  theme(aspect.ratio = 1)#+
+  theme(aspect.ratio = 1)
 #dev.off()
 ```
 
