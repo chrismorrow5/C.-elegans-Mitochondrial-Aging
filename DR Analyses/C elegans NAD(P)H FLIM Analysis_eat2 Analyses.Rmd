@@ -10,20 +10,20 @@ library(scales)
 library(cluster)
 library(stringr)
 library(ggsignif)
+library(forcats)
 rm(list=ls())
 
-setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/DR Analyses/')
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/DR Analyses/')
 
-data_mito <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_052623.csv')
+data_mito <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/FLIM_Mito_052623.csv')
 
-data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_052623.csv')
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/FLIM_Mito_Median_Per_Animal_052623.csv')
 
-data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
+data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
 
 ```
 
 ##Process Data for plots
-
 ```{r}
 data_mito_animal$Condition <- str_c(data_mito_animal$Age," ", data_mito_animal$TissueFullName," ",data_mito_animal$Nutrients)
 
@@ -40,8 +40,7 @@ myvars2 <- c("a1mean", "t2mean", "t1mean", "Imean", "tmmean", "Condition", "Age"
 data_averages <- unique(data_mito_animal[myvars2], by ="Imean")
 ```
 
-##Plot bwm tm D1 vs 11, AL vs DR#\#
-
+##Plot bwm tm D1 vs 11, AL vs DR
 ```{r}
 data_aldr_youngold_musNAremov <- data_aldr_youngold[data_aldr_youngold$t.bwm.tm != "#N/A", ] 
 data_aldr_youngold_musNAremov$t.bwm.tm <- as.numeric(data_aldr_youngold_musNAremov$t.bwm.tm)
@@ -98,7 +97,6 @@ ggtitle("PM")
 ```
 
 ##Plot germ tm D1 vs 9, AL vs DR#\#
-
 ```{r}
 myagesoygerm <- c("1","9")
 data_aldr_youngoldgerm <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myagesoygerm))
@@ -121,7 +119,6 @@ ggtitle("Germline")
 ```
 
 ##PCA of worm body wall mucsle Y O AL DR#\#
-
 ```{r}
 set.seed(1)
 myvars_mus <- c("t.bwm.a1","t.bwm.t1","t.bwm.t2","t.bwm.i","Age","Nutrients")
@@ -133,11 +130,12 @@ data_aldr_youngold_mus_pca_NAremov$t.bwm.t1 <- as.numeric(data_aldr_youngold_mus
 data_aldr_youngold_mus_pca_NAremov$t.bwm.t2 <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.t2)
 data_aldr_youngold_mus_pca_NAremov$t.bwm.i <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.i)
 
+data_aldr_youngold_mus_pca_NAremov$t.bwm.a1s <- as.numeric(scale(data_aldr_youngold_mus_pca_NAremov$t.bwm.a1))
+data_aldr_youngold_mus_pca_NAremov$t.bwm.t1s <- as.numeric(scale(data_aldr_youngold_mus_pca_NAremov$t.bwm.t1))
+data_aldr_youngold_mus_pca_NAremov$t.bwm.t2s <- as.numeric(scale(data_aldr_youngold_mus_pca_NAremov$t.bwm.t2))
+data_aldr_youngold_mus_pca_NAremov$t.bwm.is <- as.numeric(scale(data_aldr_youngold_mus_pca_NAremov$t.bwm.i))
 
-pca <- prcomp(data_aldr_youngold_mus_pca_NAremov[,1:4], scale=TRUE)
-pca.var <- pca$s#dev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-
+pca <- prcomp(data_aldr_youngold_mus_pca_NAremov[,7:10], scale=FALSE)
 pcadatamus <- data.frame(pca$x[,1], pca$x[,2], Age=data_aldr_youngold_mus_pca_NAremov$Age, Nutrients=data_aldr_youngold_mus_pca_NAremov$Nutrients)
 
 #pdf(paste(Sys.Date(),"bwm pca al dr y o.pdf"))
@@ -151,8 +149,7 @@ ggplot(pcadatamus, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
 #dev.off()
 ```
 
-##PCA of worm pm Y O AL DR#\#
-
+##PCA of worm pm Y O AL DR#
 ```{r}
 set.seed(1)
 myvars_pm <- c("pm.a1","pm.t1","pm.t2","pm.i","Age","Nutrients")
@@ -164,11 +161,12 @@ data_aldr_youngold_pm_pca_NAremov$pm.t1 <- as.numeric(data_aldr_youngold_pm_pca_
 data_aldr_youngold_pm_pca_NAremov$pm.t2 <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.t2)
 data_aldr_youngold_pm_pca_NAremov$pm.i <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.i)
 
+data_aldr_youngold_pm_pca_NAremov$pm.a1s <- as.numeric(scale(data_aldr_youngold_pm_pca_NAremov$pm.a1))
+data_aldr_youngold_pm_pca_NAremov$pm.t1s <- as.numeric(scale(data_aldr_youngold_pm_pca_NAremov$pm.t1))
+data_aldr_youngold_pm_pca_NAremov$pm.t2s <- as.numeric(scale(data_aldr_youngold_pm_pca_NAremov$pm.t2))
+data_aldr_youngold_pm_pca_NAremov$pm.is <- as.numeric(scale(data_aldr_youngold_pm_pca_NAremov$pm.i))
 
-pca <- prcomp(data_aldr_youngold_pm_pca_NAremov[,1:4], scale=TRUE)
-pca.var <- pca$s#dev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-
+pca <- prcomp(data_aldr_youngold_pm_pca_NAremov[,7:10], scale=FALSE)
 pcadatapm <- data.frame(pca$x[,1], pca$x[,2], Age=data_aldr_youngold_pm_pca_NAremov$Age, Nutrients=data_aldr_youngold_pm_pca_NAremov$Nutrients)
 
 #pdf(paste(Sys.Date(),"pm pca al dr y o.pdf"))
@@ -183,7 +181,6 @@ ggplot(pcadatapm, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
 ```
 
 ##PCA of worm hyp Y O AL DR
-
 ```{r}
 set.seed(1)
 myvars_hyp <- c("t.h.a1","t.h.t1","t.h.t2","t.h.i","Age","Nutrients")
@@ -195,7 +192,12 @@ data_aldr_youngold_hyp_pca_NAremov$t.h.t1 <- as.numeric(data_aldr_youngold_hyp_p
 data_aldr_youngold_hyp_pca_NAremov$t.h.t2 <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.t2)
 data_aldr_youngold_hyp_pca_NAremov$t.h.i <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.i)
 
-pca <- prcomp(data_aldr_youngold_hyp_pca_NAremov[,1:4], scale=TRUE)
+data_aldr_youngold_hyp_pca_NAremov$t.h.a1s <- as.numeric(scale(data_aldr_youngold_hyp_pca_NAremov$t.h.a1))
+data_aldr_youngold_hyp_pca_NAremov$t.h.t1s <- as.numeric(scale(data_aldr_youngold_hyp_pca_NAremov$t.h.t1))
+data_aldr_youngold_hyp_pca_NAremov$t.h.t2s <- as.numeric(scale(data_aldr_youngold_hyp_pca_NAremov$t.h.t2))
+data_aldr_youngold_hyp_pca_NAremov$t.h.is <- as.numeric(scale(data_aldr_youngold_hyp_pca_NAremov$t.h.i))
+
+pca <- prcomp(data_aldr_youngold_hyp_pca_NAremov[,7:10], scale=FALSE)
 pca.var <- pca$s#dev^2
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
 
@@ -213,7 +215,6 @@ ggplot(pcadatahyp, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
 ```
 
 ##Plot tm line AL vs DR across age for muscle#\#
-
 ```{r}
 mytissuesmus <- c("Caudal BWM")
 datamus <- as.data.frame(subset(data_averages, TissueFullName%in%mytissuesmus))
