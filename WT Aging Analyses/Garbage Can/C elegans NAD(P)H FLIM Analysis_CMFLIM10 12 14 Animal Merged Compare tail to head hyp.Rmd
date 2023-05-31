@@ -1,0 +1,248 @@
+
+```{r}
+library(gtools)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(gridExtra)
+library(scales)
+library(cluster)
+library(stringr)
+rm(list=ls())
+
+data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
+
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/WT Aging Analyses/')
+
+mynutrients <- c("AL")
+
+data_mito_animal_matrix_al <- as.data.frame(subset(data_mito_animal_matrix, Nutrients%in%mynutrients))
+
+
+```
+##Correlation Plot - head vs tail hyp tm##
+```{r}
+set.seed(1)
+
+data_hh_th <- subset(data_mito_animal_matrix_al, h.h.tm != "#N/A" & t.h.tm != '#N/A')
+data_hh_th$h.h.tm <- as.numeric(data_hh_th$h.h.tm)
+data_hh_th$t.h.tm <- as.numeric(data_hh_th$t.h.tm)
+
+mid<-mean(data_hh_th$Age)
+
+#pdf("hyp tm cor.pdf")
+ggplot(data_hh_th, aes(x=h.h.tm, y=t.h.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("Caudal Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("Cranial Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  theme(aspect.ratio = 1)#+
+#dev.off()
+
+
+
+
+```
+##Correlation Plot - head vs tail bwm tm##
+```{r}
+set.seed(1)
+
+mid<-mean(data$Age)
+
+data5 <- data[seq(dim(data)[1],1),]
+
+#pdf("bwm tm cor.pdf")
+ggplot(data5, aes(x=h.bwm.tm, y=t.bwm.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  #stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  #scale_color_manual(values=colors)+
+  #theme(legend.position = "none")+
+  ylab(bquote("Caudal Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("Cranial Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  #theme(aspect.ratio=1)+
+  #theme(text=element_text(size=20))+                               
+  theme(aspect.ratio = 1)#+
+  #ggtitle("All Tissues")
+  #theme(plot.title = element_text(hjust = 0.5))+
+  #geom_text(data=graphLabels, aes(x=Group, y = c(max+.2), label=Pval), size=10, color="black")
+#dev.off()
+
+#ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue, shape=Where, frame=TRUE, frame.type = 'norm'))
+
+#geom_point(aes(fill=Age), colour="black",pch=21, size=2)+
+
+
+```
+
+
+
+##Correlation Plot - head vs tail hyp tm##
+```{r}
+set.seed(1)
+
+mid<-mean(data$Age)
+
+#pdf("pca.pdf")
+ggplot(data, aes(x=h.h.tm, y=t.h.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  #stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  #scale_color_manual(values=colors)+
+  #theme(legend.position = "none")+
+  ylab(bquote("Caudal Hypodermis t2"))+
+  xlab(bquote("Cranial Hypodermis t2"))+
+  #theme(aspect.ratio=1)+
+  #theme(text=element_text(size=20))+                               
+  theme(aspect.ratio = 1)#+
+  #ggtitle("All Tissues")
+  #theme(plot.title = element_text(hjust = 0.5))+
+  #geom_text(data=graphLabels, aes(x=Group, y = c(max+.2), label=Pval), size=10, color="black")
+#dev.off()
+
+#ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue, shape=Where, frame=TRUE, frame.type = 'norm'))
+
+#geom_point(aes(fill=Age), colour="black",pch=21, size=2)+
+
+```
+
+
+##Correlation Plot - head vs tail hyp a1##
+```{r}
+set.seed(1)
+
+mid<-mean(data$Age)
+
+#pdf("bwm h t cor.pdf")
+ggplot(data, aes(x=h.h.a1, y=t.h.a1, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  #stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  #scale_color_manual(values=colors)+
+  #theme(legend.position = "none")+
+  ylab(bquote("Tail hyp a1"))+
+  xlab(bquote("Head hyp a1"))+
+  #theme(aspect.ratio=1)+
+  #theme(text=element_text(size=20))+                               
+  theme(aspect.ratio = 1)#+
+  #ggtitle("All Tissues")
+  #theme(plot.title = element_text(hjust = 0.5))+
+  #geom_text(data=graphLabels, aes(x=Group, y = c(max+.2), label=Pval), size=10, color="black")
+#dev.off()
+
+#ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue, shape=Where, frame=TRUE, frame.type = 'norm'))
+
+#geom_point(aes(fill=Age), colour="black",pch=21, size=2)+
+
+
+```
+
+##Correlation Plot - head vs tail bwm t2##
+```{r}
+set.seed(1)
+
+mid<-mean(data$Age)
+
+#pdf("pca.pdf")
+ggplot(data, aes(x=h.h.t2, y=t.h.t2, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  #stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  #scale_color_manual(values=colors)+
+  #theme(legend.position = "none")+
+  ylab(bquote("Tail BWM t2"))+
+  xlab(bquote("Head BWM t2"))+
+  #theme(aspect.ratio=1)+
+  #theme(text=element_text(size=20))+                               
+  theme(aspect.ratio = 1)#+
+  #ggtitle("All Tissues")
+  #theme(plot.title = element_text(hjust = 0.5))+
+  #geom_text(data=graphLabels, aes(x=Group, y = c(max+.2), label=Pval), size=10, color="black")
+#dev.off()
+
+#ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue, shape=Where, frame=TRUE, frame.type = 'norm'))
+
+#geom_point(aes(fill=Age), colour="black",pch=21, size=2)+
+
+```
+
+##PCA ggplotALLAges##
+```{r}
+set.seed(1)
+
+pca <- prcomp(data[,9:32], scale=TRUE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=data$Age, Tissue=data$Tissue)
+
+mid<-mean(data$Age)
+
+pdf("pca.pdf")
+ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Age))+
+  scale_color_gradient2(midpoint=mid, low="blue", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  #stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  #scale_color_manual(values=colors)+
+  #theme(legend.position = "none")+
+  ylab(bquote("PCA2"))+
+  xlab(bquote("PCA1"))+
+  #theme(aspect.ratio=1)+
+  #theme(text=element_text(size=20))+                               
+  theme(aspect.ratio = 1)+
+  ggtitle("All Tissues")
+  #theme(plot.title = element_text(hjust = 0.5))+
+  #geom_text(data=graphLabels, aes(x=Group, y = c(max+.2), label=Pval), size=10, color="black")
+dev.off()
+
+#ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue, shape=Where, frame=TRUE, frame.type = 'norm'))
+
+#geom_point(aes(fill=Age), colour="black",pch=21, size=2)+
+
+```
+
+
+
+
+
+```{r}
+
+myages2 <- c("One")
+#myages <- c("One","Three","Five","Seven","Nine","Eleven")
+
+
+myvars3 <- c("t.h.tm", "t.bwm.tm","pm.tm")
+
+data_cor <- as.data.frame(subset(data, AgeSpell%in%myages2))
+data_cor2 <- select(data_cor, t.h.tm, t.bwm.tm, pm.tm)
+
+#pdf("hyp cor.pdf")
+library(corrplot)
+mydata.cor = cor(data_cor[,9:18])
+corrplot(mydata.cor)
+#dev.off()
+
+#pdf("mus cor.pdf")
+library(corrplot)
+mydata.cor = cor(data_cor[,19:28])
+corrplot(mydata.cor)
+#dev.off()
+
+pdf("One cor.pdf")
+library(corrplot)
+mydata.cor = cor(data_cor[,9:33])
+corrplot(mydata.cor)
+dev.off()
+
+#pdf("One cor.pdf")
+library(corrplot)
+mydata.cor = cor(data_cor2)
+corrplot(mydata.cor)
+#dev.off()
+```

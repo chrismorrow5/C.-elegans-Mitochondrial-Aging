@@ -1,0 +1,296 @@
+##Load Data
+
+```{r}
+library(gtools)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(gridExtra)
+library(scales)
+library(cluster)
+library(stringr)
+library(ggsignif)
+rm(list=ls())
+
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/DR Analyses/')
+
+data_mito <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_052623.csv')
+
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_052623.csv')
+
+data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
+
+```
+
+##Process Data for plots
+
+```{r}
+data_mito_animal$Condition <- str_c(data_mito_animal$Age," ", data_mito_animal$TissueFullName," ",data_mito_animal$Nutrients)
+
+myagesoy <- c("1","11")
+data_aldr_youngold <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myagesoy))
+data_aldr_youngold$Age <- as.character(data_aldr_youngold$Age)
+
+data_mito_animal$Imean <- ave(data_mito_animal$i, data_mito_animal$Condition)
+data_mito_animal$a1mean <- ave(data_mito_animal$a1, data_mito_animal$Condition)
+data_mito_animal$t1mean <- ave(data_mito_animal$t1, data_mito_animal$Condition)
+data_mito_animal$t2mean <- ave(data_mito_animal$t2, data_mito_animal$Condition)
+data_mito_animal$tmmean <- ave(data_mito_animal$tm, data_mito_animal$Condition)
+myvars2 <- c("a1mean", "t2mean", "t1mean", "Imean", "tmmean", "Condition", "Age", "Nutrients", "Tissue", "TissueFullName")
+data_averages <- unique(data_mito_animal[myvars2], by ="Imean")
+```
+
+##Plot bwm tm D1 vs 11, AL vs DR#\#
+
+```{r}
+data_aldr_youngold_musNAremov <- data_aldr_youngold[data_aldr_youngold$t.bwm.tm != "#N/A", ] 
+data_aldr_youngold_musNAremov$t.bwm.tm <- as.numeric(data_aldr_youngold_musNAremov$t.bwm.tm)
+
+#pdf(paste(Sys.Date(),"AL DR Y O bwm.pdf"))
+ggplot(data=data_aldr_youngold_musNAremov, aes(Age, t.bwm.tm, fill=Nutrients))+
+geom_violin()+
+stat_summary(fun.data="mean_cl_boot", size=1, position = position_dodge(width = 0.9))+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme_classic(base_size = 20, base_family = "")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+
+ggtitle("BWM")
+#dev.off()
+```
+
+##Plot hyp tm D1 vs 11, AL vs DR#\#
+
+```{r}
+data_aldr_youngold_hypNAremov <- data_aldr_youngold[data_aldr_youngold$t.h.tm != "#N/A", ] 
+data_aldr_youngold_hypNAremov$t.h.tm <- as.numeric(data_aldr_youngold_hypNAremov$t.h.tm)
+
+#pdf(paste(Sys.Date(),"AL DR Y O hyp.pdf"))
+ggplot(data=data_aldr_youngold_hypNAremov, aes(x=Age, y=t.h.tm, fill=Nutrients))+
+geom_violin()+
+stat_summary(fun.data="mean_cl_boot", size=1, position = position_dodge(width = 0.9))+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme_classic(base_size = 20, base_family = "")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+
+ggtitle("Hypodermis")
+#dev.off()
+```
+
+##Plot pm tm D1 vs 11, AL vs DR#\#
+
+```{r}
+data_aldr_youngold_pmNAremov <- data_aldr_youngold[data_aldr_youngold$pm.tm != "#N/A", ] 
+data_aldr_youngold_pmNAremov$pm.tm <- as.numeric(data_aldr_youngold_pmNAremov$pm.tm)
+
+#pdf(paste(Sys.Date(),"AL DR Y O pm.pdf"))
+ggplot(data=data_aldr_youngold_pmNAremov, aes(x=Age, y=pm.tm, fill=Nutrients))+
+geom_violin()+
+stat_summary(fun.data="mean_cl_boot", size=1, position = position_dodge(width = 0.9))+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme_classic(base_size = 20, base_family = "")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+
+ggtitle("PM")
+#dev.off()
+```
+
+##Plot germ tm D1 vs 9, AL vs DR#\#
+
+```{r}
+myagesoygerm <- c("1","9")
+data_aldr_youngoldgerm <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myagesoygerm))
+data_aldr_youngoldgerm$Age <- as.character(data_aldr_youngoldgerm$Age)
+
+data_aldr_youngoldgerm_germNAremov <- data_aldr_youngoldgerm[data_aldr_youngoldgerm$g.tm != "#N/A", ] 
+data_aldr_youngoldgerm_germNAremov$g.tm <- as.numeric(data_aldr_youngoldgerm_germNAremov$g.tm)
+
+#pdf(paste(Sys.Date(),"AL DR Y O germ.pdf"))
+ggplot(data=data_aldr_youngoldgerm_germNAremov, aes(x=Age, y=g.tm, fill=Nutrients))+
+geom_violin()+
+stat_summary(fun.data="mean_cl_boot", size=1, position = position_dodge(width = 0.9))+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme_classic(base_size = 20, base_family = "")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+
+ggtitle("Germline")
+#dev.off()
+```
+
+##PCA of worm body wall mucsle Y O AL DR#\#
+
+```{r}
+set.seed(1)
+myvars_mus <- c("t.bwm.a1","t.bwm.t1","t.bwm.t2","t.bwm.i","Age","Nutrients")
+data_aldr_youngold_mus_pca <- data_aldr_youngold[myvars_mus]
+data_aldr_youngold_mus_pca_NAremov <- data_aldr_youngold_mus_pca[data_aldr_youngold_mus_pca$t.bwm.a1 != "#N/A",]
+
+data_aldr_youngold_mus_pca_NAremov$t.bwm.a1 <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.a1)
+data_aldr_youngold_mus_pca_NAremov$t.bwm.t1 <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.t1)
+data_aldr_youngold_mus_pca_NAremov$t.bwm.t2 <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.t2)
+data_aldr_youngold_mus_pca_NAremov$t.bwm.i <- as.numeric(data_aldr_youngold_mus_pca_NAremov$t.bwm.i)
+
+
+pca <- prcomp(data_aldr_youngold_mus_pca_NAremov[,1:4], scale=TRUE)
+pca.var <- pca$s#dev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadatamus <- data.frame(pca$x[,1], pca$x[,2], Age=data_aldr_youngold_mus_pca_NAremov$Age, Nutrients=data_aldr_youngold_mus_pca_NAremov$Nutrients)
+
+#pdf(paste(Sys.Date(),"bwm pca al dr y o.pdf"))
+ggplot(pcadatamus, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
+  geom_point(size = 4)+
+  theme_classic(base_size = 30, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("BWM")#+
+#dev.off()
+```
+
+##PCA of worm pm Y O AL DR#\#
+
+```{r}
+set.seed(1)
+myvars_pm <- c("pm.a1","pm.t1","pm.t2","pm.i","Age","Nutrients")
+data_aldr_youngold_pm_pca <- data_aldr_youngold[myvars_pm]
+data_aldr_youngold_pm_pca_NAremov <- data_aldr_youngold_pm_pca[data_aldr_youngold_pm_pca$pm.a1 != "#N/A",]
+
+data_aldr_youngold_pm_pca_NAremov$pm.a1 <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.a1)
+data_aldr_youngold_pm_pca_NAremov$pm.t1 <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.t1)
+data_aldr_youngold_pm_pca_NAremov$pm.t2 <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.t2)
+data_aldr_youngold_pm_pca_NAremov$pm.i <- as.numeric(data_aldr_youngold_pm_pca_NAremov$pm.i)
+
+
+pca <- prcomp(data_aldr_youngold_pm_pca_NAremov[,1:4], scale=TRUE)
+pca.var <- pca$s#dev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadatapm <- data.frame(pca$x[,1], pca$x[,2], Age=data_aldr_youngold_pm_pca_NAremov$Age, Nutrients=data_aldr_youngold_pm_pca_NAremov$Nutrients)
+
+#pdf(paste(Sys.Date(),"pm pca al dr y o.pdf"))
+ggplot(pcadatapm, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
+  geom_point(size = 4)+
+  theme_classic(base_size = 30, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("PM")
+#dev.off()
+```
+
+##PCA of worm hyp Y O AL DR
+
+```{r}
+set.seed(1)
+myvars_hyp <- c("t.h.a1","t.h.t1","t.h.t2","t.h.i","Age","Nutrients")
+data_aldr_youngold_hyp_pca <- data_aldr_youngold[myvars_hyp]
+data_aldr_youngold_hyp_pca_NAremov <- data_aldr_youngold_hyp_pca[data_aldr_youngold_hyp_pca$t.h.a1 != "#N/A",]
+
+data_aldr_youngold_hyp_pca_NAremov$t.h.a1 <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.a1)
+data_aldr_youngold_hyp_pca_NAremov$t.h.t1 <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.t1)
+data_aldr_youngold_hyp_pca_NAremov$t.h.t2 <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.t2)
+data_aldr_youngold_hyp_pca_NAremov$t.h.i <- as.numeric(data_aldr_youngold_hyp_pca_NAremov$t.h.i)
+
+pca <- prcomp(data_aldr_youngold_hyp_pca_NAremov[,1:4], scale=TRUE)
+pca.var <- pca$s#dev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadatahyp <- data.frame(pca$x[,1], pca$x[,2], Age=data_aldr_youngold_hyp_pca_NAremov$Age, Nutrients=data_aldr_youngold_hyp_pca_NAremov$Nutrients)
+
+#pdf(paste(Sys.Date(),"hyp pca al dr y o.pdf"))
+ggplot(pcadatahyp, aes(x=pca$x[,1], y=pca$x[,2], col=Age, shape=Nutrients))+
+  geom_point(size = 4)+
+  theme_classic(base_size = 30, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("Hypodermis")
+#dev.off()
+```
+
+##Plot tm line AL vs DR across age for muscle#\#
+
+```{r}
+mytissuesmus <- c("Caudal BWM")
+datamus <- as.data.frame(subset(data_averages, TissueFullName%in%mytissuesmus))
+
+#pdf(paste(Sys.Date(),"bwm tm line.pdf"))
+ggplot(data=datamus, aes(x=Age, y=tmmean, color=Nutrients))+
+geom_line(size=2)+
+theme_classic(base_size = 20, base_family = "")+
+theme(legend.position = "none")+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+ 
+theme(legend.position="right")+
+ggtitle("BWM")
+#dev.off()
+```
+
+##Plot tm line AL vs DR across age for hypodermis#\#
+
+```{r}
+mytissueshyp <- c("Caudal Hypodermis")
+datahyp <- as.data.frame(subset(data_averages, TissueFullName%in%mytissueshyp))
+
+#pdf(paste(Sys.Date(),"hyp tm line.pdf"))
+ggplot(data=datahyp, aes(x=Age, y=tmmean, color=Nutrients))+
+geom_line(size=2)+
+theme_classic(base_size = 20, base_family = "")+
+theme(legend.position = "none")+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+ 
+theme(legend.position="right")+
+ggtitle("Hypodermis")
+#dev.off()
+```
+
+##Plot tm line AL vs DR across age for Pharyngeal Muscle#\#
+
+```{r}
+mytissuespm <- c("PM")
+datapm <- as.data.frame(subset(data_averages, TissueFullName%in%mytissuespm))
+
+#pdf(paste(Sys.Date(),"pm tm line.pdf"))
+ggplot(data=datapm, aes(x=Age, y=tmmean, color=Nutrients))+
+geom_line(size=2)+
+theme_classic(base_size = 20, base_family = "")+
+theme(legend.position = "none")+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+ 
+theme(legend.position="right")+
+ggtitle("PM")
+#dev.off()
+```
+
+##Plot tm line AL vs DR across age for Germline#\#
+
+```{r}
+mytissuesgerm <- c("Germline")
+myages_no11 <- c("1","3","5","7","9")
+
+datagerm <- as.data.frame(subset(data_averages, TissueFullName%in%mytissuesgerm))
+datagerm <- as.data.frame(subset(datagerm, Age%in%myages_no11))
+
+#pdf(paste(Sys.Date(),"germ tm line.pdf"))
+ggplot(data=datagerm, aes(x=Age, y=tmmean, color=Nutrients))+
+geom_line(size=2)+
+theme_classic(base_size = 20, base_family = "")+
+theme(legend.position = "none")+
+ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+xlab("Age (Days)")+
+theme(aspect.ratio=1)+
+theme(text=element_text(size=30))+ 
+theme(legend.position="right")+
+ggtitle("Germline")
+#dev.off()
+```

@@ -1,0 +1,529 @@
+
+##Read in data, clear workspace and load packages
+```{r}
+library(gtools)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(gridExtra)
+library(scales)
+library(cluster)
+library(stringr)
+library(ggsignif)
+rm(list=ls())
+
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/WT Aging Analyses/')
+
+data_mito <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_052623.csv')
+
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_052623.csv')
+
+data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
+
+mynutrients_al <- c("AL")
+
+data_mito_animal_matrix_al <- as.data.frame(subset(data_mito_animal_matrix, Nutrients%in%mynutrients_al))
+
+
+```
+
+##Process data for time course plots
+```{r}
+mytissues_4 <- c("PM", "Caudal BWM", "Caudal Hypodermis","Germline")
+
+data_al <- as.data.frame(subset(data_mito_animal, Nutrients%in%mynutrients_al))
+data_4tissues <- as.data.frame(subset(data_al, TissueFullName%in%mytissues_4))
+
+data_4tissues$Condition <- str_c(data_4tissues$Age," ", data_4tissues$Tissue," ",data_4tissues$Nutrients)
+
+data_4tissues$Imean <- ave(data_4tissues$i, data_4tissues$Condition)
+data_4tissues$a1mean <- ave(data_4tissues$a1, data_4tissues$Condition)
+data_4tissues$t1mean <- ave(data_4tissues$t1, data_4tissues$Condition)
+data_4tissues$t2mean <- ave(data_4tissues$t2, data_4tissues$Condition)
+data_4tissues$tmmean <- ave(data_4tissues$tm,data_4tissues$Condition)
+myvars2 <- c("a1mean", "t2mean", "t1mean", "Imean", "tmmean", "Condition", "Age", "Nutrients", "Tissue")
+data_4tissues_averages <- unique(data_4tissues[myvars2], by ="Imean")
+```
+
+
+##Plot tm line##
+```{r}
+#pdf(paste(Sys.Date(),"tm line.pdf"))
+  ggplot(data=data_4tissues_averages, aes(x=Age, y=tmmean, group=Tissue, color=Tissue))+
+    geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))+ 
+    theme(legend.position="right")
+#dev.off()
+
+```
+
+
+##Plot I line##
+```{r}
+
+#pdf(paste(Sys.Date(),"I line.pdf"))
+  ggplot(data=data_4tissues_averages, aes(x=Age, y=Imean, group=Tissue, color=Tissue))+
+    geom_line(size=2)+
+  #stat_summary(fun.data_4tissues="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  Intensity"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))+ 
+    theme(legend.position="right")+
+    ylim(0,15000)
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  #ggtitle(mytissues)
+#dev.off()
+
+```
+
+##Plot a1 line##
+```{r}
+#pdf(paste(Sys.Date(),"I line.pdf"))
+  ggplot(data=data_4tissues_averages, aes(x=Age, y=a1mean, group=Tissue, color=Tissue))+
+    geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *alpha[1]* " (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))+ 
+    theme(legend.position="right")
+#dev.off()
+```
+
+##Plot t1 line##
+```{r}
+#pdf(paste(Sys.Date(),"t1 line.pdf"))
+  ggplot(data=data_4tissues_averages, aes(x=Age, y=t1mean, group=Tissue, color=Tissue))+
+  geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *tau[1]* " (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))+ 
+  theme(legend.position="right")+
+  ylim(0,1)
+#dev.off()
+```
+
+##Plot t2 line##
+```{r}
+#pdf(paste(Sys.Date(),"t2 line.pdf"))
+  ggplot(data=data_4tissues_averages, aes(x=Age, y=t2mean, group=Tissue, color=Tissue))+
+  geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *tau[2]* " (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))+ 
+  theme(legend.position="right")
+#dev.off()
+```
+
+##Normalize Data for PCA
+```{r}
+##Normalize data set##
+data_mito_norm <- data.frame(scale(data_mito$a1), scale(data_mito$t1), scale(data_mito$t2), scale(log(data_mito$i)), data_mito$Age, data_mito$Tissue, data_mito$Nutrients, data_mito$TissueFullName)
+```
+
+##PCA ggplot Muscle##
+```{r}
+set.seed(1)
+mytissuesm <- c("Caudal BWM")
+mynutrients_al <- c("AL")
+
+datamus <- as.data.frame(subset(data_mito_norm, data_mito.TissueFullName%in%mytissuesm))
+datamus <- as.data.frame(subset(datamus, data_mito.Nutrients%in%mynutrients_al))
+myvars3 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
+datamus <- datamus[myvars3]
+
+pca <- prcomp(datamus[,1:4], scale=TRUE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datamus$data_mito.Age)
+pcadata
+
+mid<-mean(datamus$data_mito.Age)
+
+#pdf(paste(Sys.Date(), " BWM PCA.pdf"))
+ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="blue",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("BWM")
+#dev.off()
+
+pca.one <- pcadata[pcadata$Age == "1",]
+sd.one.pca.one <- sd(pca.one[,1])
+
+pca.three <- pcadata[pcadata$Age == "3",]
+sd.one.pca.three <- sd(pca.three[,1])
+
+pca.five <- pcadata[pcadata$Age == "5",]
+sd.one.pca.five <- sd(pca.five[,1])
+
+pca.seven <- pcadata[pcadata$Age == "7",]
+sd.one.pca.seven <- sd(pca.seven[,1])
+
+pca.nine <- pcadata[pcadata$Age == "9",]
+sd.one.pca.nine <- sd(pca.nine[,1])
+
+pca.eleven <- pcadata[pcadata$Age == "11",]
+sd.one.pca.eleven <- sd(pca.eleven[,1])
+
+pca.sds.mus <- c(sd.one.pca.one, sd.one.pca.three, sd.one.pca.five, sd.one.pca.seven, sd.one.pca.nine, sd.one.pca.eleven)
+```
+
+##PCA ggplot Hyp##
+```{r}
+set.seed(1)
+mytissueshyp <- c("Caudal Hypodermis")
+mynutrients_al <- c("AL")
+
+datahyp <- as.data.frame(subset(data_mito_norm, data_mito.TissueFullName%in%mytissueshyp))
+datahyp <- as.data.frame(subset(datahyp, data_mito.Nutrients%in%mynutrients_al))
+myvars3 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
+datahyp <- datahyp[myvars3]
+
+pca <- prcomp(datahyp[,1:4], scale=TRUE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datahyp$data_mito.Age)
+
+mid<-mean(datahyp$data_mito.Age)
+
+#pdf(paste(Sys.Date(), "Hypodermis PCA.pdf"))
+ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="blue",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("Hypodermis")#+
+#dev.off()
+
+pca.one <- pcadata[pcadata$Age == "1",]
+sd.one.pca.one <- sd(pca.one[,1])
+
+pca.three <- pcadata[pcadata$Age == "3",]
+sd.one.pca.three <- sd(pca.three[,1])
+
+pca.five <- pcadata[pcadata$Age == "5",]
+sd.one.pca.five <- sd(pca.five[,1])
+
+pca.seven <- pcadata[pcadata$Age == "7",]
+sd.one.pca.seven <- sd(pca.seven[,1])
+
+pca.nine <- pcadata[pcadata$Age == "9",]
+sd.one.pca.nine <- sd(pca.nine[,1])
+
+pca.eleven <- pcadata[pcadata$Age == "11",]
+sd.one.pca.eleven <- sd(pca.eleven[,1])
+
+pca.sds.hyp <- c(sd.one.pca.one, sd.one.pca.three, sd.one.pca.five, sd.one.pca.seven, sd.one.pca.nine, sd.one.pca.eleven)
+```
+
+##PCA ggplot Pharyngeal Muscle##
+```{r}
+set.seed(1)
+mytissuespm <- c("PM")
+mynutrients_al <- c("AL")
+
+datapm <- as.data.frame(subset(data_mito_norm, data_mito.TissueFullName%in%mytissuespm))
+datapm <- as.data.frame(subset(datapm, data_mito.Nutrients%in%mynutrients_al))
+myvars3 <- c("scale.data_mito.a1.","scale.data_mito.t1.","scale.data_mito.t2.","scale.log.data_mito.i..","data_mito.Age")
+datapm <- datapm[myvars3]
+
+pca <- prcomp(datapm[,1:4], scale=TRUE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Age=datapm$data_mito.Age)
+pcadata
+
+mid<-mean(datapm$data_mito.Age)
+
+#pdf(paste(Sys.Date(), "PM PCA.pdf"))
+ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="blue",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("PCA2"))+
+  xlab(bquote("PCA1"))+
+  theme(aspect.ratio = 1)+
+  ggtitle("PM")
+#dev.off()
+
+pca.one <- pcadata[pcadata$Age == "1",]
+sd.one.pca.one <- sd(pca.one[,1])
+
+pca.three <- pcadata[pcadata$Age == "3",]
+sd.one.pca.three <- sd(pca.three[,1])
+
+pca.five <- pcadata[pcadata$Age == "5",]
+sd.one.pca.five <- sd(pca.five[,1])
+
+pca.seven <- pcadata[pcadata$Age == "7",]
+sd.one.pca.seven <- sd(pca.seven[,1])
+
+pca.nine <- pcadata[pcadata$Age == "9",]
+sd.one.pca.nine <- sd(pca.nine[,1])
+
+pca.eleven <- pcadata[pcadata$Age == "11",]
+sd.one.pca.eleven <- sd(pca.eleven[,1])
+
+pca.sds.pm <- c(sd.one.pca.one, sd.one.pca.three, sd.one.pca.five, sd.one.pca.seven, sd.one.pca.nine, sd.one.pca.eleven)
+```
+
+
+##SD plot
+```{r}
+Age <- c(1,3,5,7,9,11)
+sd.merge <- as.data.frame(Age)
+sd.merge$pm <- as.vector(pca.sds.pm)
+sd.merge$mus <- as.vector(pca.sds.mus)
+sd.merge$hyp <- as.vector(pca.sds.hyp)
+
+#pdf(paste(Sys.Date(),"sd merge plot.pdf"))
+ggplot(data=sd.merge, aes(x=Age))+
+  geom_line(aes(y = pm), color="#7CAE00", size=2)+
+  geom_line(aes(y = mus), color="#00BFC4", size=2)+
+  geom_line(aes(y = hyp), color="#C77CFF", size=2)+
+  theme_classic(base_size = 20)+
+  ylab(bquote("Standard Deviation PC1"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=20))
+#dev.off()
+```
+
+##Plot tm line for cranial vs caudal over time plot##
+```{r}
+mytissues_crca <- c("Cranial BWM", "Caudal BWM", "Cranial Hypodermis","Caudal Hypodermis")
+mynutrients_al <- c("AL")
+
+data3 <- as.data.frame(subset(data_mito_animal, TissueFullName%in%mytissues_crca))
+data <- as.data.frame(subset(data3, Nutrients%in%mynutrients_al))
+data$Condition <- str_c(data$Age," ", data$TissueFullName," ",data$Nutrients)
+
+##Normalize data set##
+data_norm <- data.frame(rescale(data$a1), rescale(data$t1), rescale(data$t2), rescale(log(data$i)), data$Age, data$Tissue, data$Nutrients)
+
+##Calculate Average Values
+data$Imean <- ave(data$i, data$Condition)
+data$a1mean <- ave(data$a1, data$Condition)
+data$t1mean <- ave(data$t1, data$Condition)
+data$t2mean <- ave(data$t2, data$Condition)
+data$tmmean <- ave(data$tm,data$Condition)
+myvars2 <- c("a1mean", "t2mean", "t1mean", "Imean", "tmmean", "Condition", "Age", "Nutrients", "TissueFullName")
+data_averages <- unique(data[myvars2], by ="Imean")
+
+#pdf(paste(Sys.Date(), "tm caud cran line.pdf"))
+  ggplot(data=data_averages, aes(x=Age, y=tmmean, group=TissueFullName, color=TissueFullName))+
+  geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+
+  theme(legend.position="right")
+#dev.off()
+
+```
+
+
+##Format Data for Young vs Old plots
+```{r}
+
+myages_y_o <- c("1","11")
+data_al_youngold <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myages_y_o))
+data_al_youngold <- as.data.frame(subset(data_al_youngold, Nutrients%in%mynutrients_al))
+
+data_al_youngold$Age <- as.character(data_al_youngold$Age)
+data_al_youngold_musNAremov <- data_al_youngold[data_al_youngold$t.bwm.tm != "#N/A", ] 
+data_al_youngold_hypNAremov <- data_al_youngold[data_al_youngold$t.h.tm != "#N/A", ] 
+data_al_youngold_pmNAremov <- data_al_youngold[data_al_youngold$pm.tm != "#N/A", ] 
+data_al_youngold_germNAremov <- data_al_youngold[data_al_youngold$g.tm != "#N/A", ] 
+```
+
+
+##Plot tm y vs o mus##
+```{r}
+data_al_youngold_musNAremov$t.bwm.tm <- as.numeric(data_al_youngold_musNAremov$t.bwm.tm)
+
+#pdf(paste(Sys.Date(),"Plot tm y vs o bwm.pdf"))
+  ggplot(data=data_al_youngold_musNAremov, aes(x=Age, y=t.bwm.tm, color=Age))+
+    geom_violin(color="black")+
+    geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
+  theme_classic(base_size = 30, base_family = "")+
+  #theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+    ylim(1,5)+
+    ggtitle("BWM")+
+  theme(aspect.ratio=1)
+#dev.off()
+
+```
+
+
+##Plot tm y vs o hyp##
+```{r}
+data_al_youngold_hypNAremov$t.h.tm <- as.numeric(data_al_youngold_hypNAremov$t.h.tm)
+
+#pdf(paste(Sys.Date(),"Plot tm y vs o hyp.pdf"))
+  ggplot(data=data_al_youngold_hypNAremov, aes(x=Age, y=t.h.tm, color="black"))+
+        geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+    geom_violin(color="black")+
+  stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
+  theme_classic(base_size = 30, base_family = "")+
+  #theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+    ggtitle("Hypodermis")+
+     ylim(1,5)+
+  theme(aspect.ratio=1)
+#dev.off()
+
+```
+
+##Plot tm y vs o pm##
+```{r}
+data_al_youngold_pmNAremov$pm.tm <- as.numeric(data_al_youngold_pmNAremov$pm.tm)
+
+#pdf(paste(Sys.Date(),"Plot tm y vs o pm.pdf"))
+  ggplot(data=data_al_youngold_pmNAremov, aes(x=Age, y=pm.tm, color="black"))+
+    geom_violin(color="black")+
+  stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
+  theme_classic(base_size = 30, base_family = "")+
+  #theme(legend.position = "none")+
+        geom_signif(comparisons = list(c("1","11")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+    ylim(1,6)+
+  xlab("Age (Days)")+
+    ggtitle("PM")+
+  theme(aspect.ratio=1)
+#dev.off()
+
+```
+
+##Plot tm y vs o germ##
+```{r}
+myages_y_o_germ <- c("1","9")
+data_al_youngoldgerm <- as.data.frame(subset(data_mito_animal_matrix, Age%in%myages_y_o_germ))
+data_al_youngoldgerm <- as.data.frame(subset(data_al_youngoldgerm, Nutrients%in%mynutrients_al))
+
+data_al_youngoldgerm_germNAremov <- data_al_youngoldgerm[data_al_youngoldgerm$g.tm != "#N/A", ] 
+data_al_youngoldgerm_germNAremov$g.tm <- as.numeric(data_al_youngoldgerm_germNAremov$g.tm)
+data_al_youngoldgerm_germNAremov$Age <- as.character(data_al_youngoldgerm_germNAremov$Age)
+
+#pdf(paste(Sys.Date(),"Plot tm y vs o germ.pdf"))
+  ggplot(data=data_al_youngoldgerm_germNAremov, aes(x=Age, y=g.tm, color="black"))+
+    geom_violin(color="black")+
+  stat_summary(fun.data="mean_cl_boot", size=1, color="black")+
+  theme_classic(base_size = 30, base_family = "")+
+  #theme(legend.position = "none")+
+        geom_signif(comparisons = list(c("1","9")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+    ylim(1,5)+
+    ggtitle("Germline")+
+  theme(aspect.ratio=1)
+#dev.off()
+
+```
+
+##Correlation Plot - head vs tail hyp tm##
+```{r}
+data_hh_th <- subset(data_mito_animal_matrix_al, h.h.tm != "#N/A" & t.h.tm != '#N/A')
+data_hh_th$h.h.tm <- as.numeric(data_hh_th$h.h.tm)
+data_hh_th$t.h.tm <- as.numeric(data_hh_th$t.h.tm)
+
+mid<-mean(data_hh_th$Age)
+
+#pdf(paste(Sys.Date(),"h t hyp cor.pdf"))
+ggplot(data_hh_th, aes(x=h.h.tm, y=t.h.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("Caudal Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("Cranial Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  theme(aspect.ratio = 1)#+
+#dev.off()
+```
+
+##Correlation Plot - head vs tail bwm tm##
+```{r}
+data_hm_tm <- subset(data_mito_animal_matrix_al, h.bwm.tm != "#N/A" & t.bwm.tm != '#N/A')
+data_hm_tm$h.bwm.tm <- as.numeric(data_hm_tm$h.bwm.tm)
+data_hm_tm$t.bwm.tm <- as.numeric(data_hm_tm$t.bwm.tm)
+
+mid<-mean(data_hm_tm$Age)
+
+#pdf(paste(Sys.Date(),"h t bwm cor.pdf"))
+ggplot(data_hm_tm, aes(x=h.bwm.tm, y=t.bwm.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("Caudal BWM B.A./NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("Cranial BWM B.A./NAD(P)H  " *tau* "m (ns)"))+
+  theme(aspect.ratio = 1)#+
+#dev.off()
+```
+
+
+##Correlation Plot - tail bwm vs tail hyp tm##
+```{r}
+data_th_tm <- subset(data_mito_animal_matrix_al, t.h.tm != "#N/A" & t.bwm.tm != '#N/A')
+data_th_tm$t.h.tm <- as.numeric(data_th_tm$t.h.tm)
+data_th_tm$t.bwm.tm <- as.numeric(data_th_tm$t.bwm.tm)
+
+mid<-mean(data_th_tm$Age)
+
+#pdf(paste(Sys.Date(),"hyp tm cor.pdf"))
+ggplot(data_th_tm, aes(x=t.h.tm, y=t.bwm.tm, col=Age))+
+  scale_color_gradient2(midpoint=mid, low="cyan", mid="purple",high="red", space ="Lab")+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("Hypodermis B.A./NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("BWM B.A./NAD(P)H  " *tau* "m (ns)"))+
+  theme(aspect.ratio = 1)#+
+#dev.off()
+```
+
+
+##Correlation Plot - head vs tail bwm tm##
+```{r}
+data_tm <- subset(data_mito_animal_matrix_al, t.bwm.tm != '#N/A')
+data_tm$t.bwm.tm <- as.numeric(data_tm$t.bwm.tm)
+
+mid<-mean(data_tm$Age)
+
+#pdf(paste(Sys.Date(), "bwm tm cor per animal.pdf"))
+ggplot(data_tm, aes(x=Age, y=t.bwm.tm))+
+  geom_point(size = 2)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("B.A./BWM NAD(P)H  " *tau* "m (ns)"))+
+  xlab(bquote("Age (Days)"))+
+  theme(aspect.ratio = 1)#+
+#dev.off()
+```
+

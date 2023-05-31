@@ -1,0 +1,186 @@
+
+##Load Individual Mito Data##
+```{r}
+library(gtools)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(gridExtra)
+library(scales)
+library(cluster)
+rm(list=ls())
+set.seed(1)
+
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_052623.csv')
+
+data_mito <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_052623.csv')
+
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/Tissue Analyses/')
+
+mynutrients <- c("AL")
+myages <- c("1")
+mytissues <- c("PM", "Caudal BWM", "Caudal Hypodermis","Germline")
+
+data_mito_select <- subset(data_mito, Nutrients%in%mynutrients & Age%in%myages & TissueFullName%in%mytissues)
+data_mito_select <- data_mito_select[]
+
+
+data_mito_animal_select <- subset(data_mito_animal, Nutrients%in%mynutrients & Age%in%myages & TissueFullName%in%mytissues)
+
+```
+
+##Plot Intensity##
+```{r}
+
+pdf(paste(Sys.Date(),"I.pdf"))
+#par(oma=c(3,0.5,0.5,0.5))
+ggplot(data=data_mito_animal_select, aes(x=Tissue, y=i, color=Tissue))+
+  geom_violin(size=1)+
+  stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  Intensity"))+
+  xlab(element_blank())+
+  theme(aspect.ratio=1)+
+  #ylim(0,40000)+
+  theme(text=element_text(size=30))+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
+
+```
+
+####Plot tm##
+```{r}
+pdf(paste(Sys.Date(),"tm.pdf"))
+  ggplot(data=data_mito_animal_select, aes(x=Tissue, y=tm, color=Tissue))+
+  geom_violin(size=1)+
+  stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *tau[m]* " (ns)"))+
+  xlab(element_blank())+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
+
+```
+
+
+
+##Plot a1##
+```{r}
+pdf(paste(Sys.Date(),"a1.pdf"))
+  ggplot(data=data_mito_animal_select, aes(x=Tissue, y=a1, color=Tissue))+
+  geom_violin(size=1)+
+  stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *alpha[1]* " (ns)"))+
+  xlab(element_blank())+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
+
+```
+
+##Plot t1##
+```{r}
+pdf(paste(Sys.Date(),"t1.pdf"))
+  ggplot(data=data_mito_animal_select, aes(x=Tissue, y=t1, color=Tissue))+
+  geom_violin(size=1)+
+  stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *tau[1]* " (ns)"))+
+  xlab(element_blank())+
+  ylim(0,1)+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
+```
+
+##Plot t2##
+```{r}
+pdf(paste(Sys.Date(),"t2.pdf"))
+ggplot(data=data_mito_animal_select, aes(x=Tissue, y=t2, color=Tissue))+
+  geom_violin(size=1)+
+  stat_summary(fun.data="mean_cl_boot", size=1)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H  " *tau[2]* " (ns)"))+
+  xlab(element_blank())+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
+
+```
+
+##PCA##
+```{r}
+data_mito_select$a1_scale <- scale(data_mito_select$a1)
+data_mito_select$t1_scale <- scale(data_mito_select$t1)
+data_mito_select$t2_scale <- scale(data_mito_select$t2)
+data_mito_select$i_scale <- scale(data_mito_select$i)
+
+pca <- prcomp(data_mito_select[,16:19], scale=TRUE)
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Tissue=data_mito_select$Tissue)
+
+pdf(paste(Sys.Date(),"pca.pdf"))
+ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Tissue))+
+  geom_point(size = 3)+
+  theme_classic(base_size = 20, base_family = "")+
+  ylab(bquote("PC2"))+
+  xlab(bquote("PC1"))+
+  theme(aspect.ratio = 1)
+dev.off()
+
+```
+##PCA Var Plot
+```{r}
+pca.mus <- pcadata[pcadata$Tissue == "BWM",]
+sd.one.pca.mus <- sd(pca.mus[,1])
+
+pca.pm <- pcadata[pcadata$Tissue == "PM",]
+sd.one.pca.pm <- sd(pca.pm[,1])
+
+pca.hyp <- pcadata[pcadata$Tissue == "Hypodermis",]
+sd.one.pca.hyp <- sd(pca.hyp[,1])
+
+pca.germ <- pcadata[pcadata$Tissue == "Germline",]
+sd.one.pca.germ <- sd(pca.germ[,1])
+
+pca.sds <- c(sd.one.pca.germ, sd.one.pca.pm, sd.one.pca.mus, sd.one.pca.hyp)
+tissue.names <- c("Germline", "PM", "BWM", "Hypodermis")
+
+pca.sds.with.title <- as.data.frame(pca.sds, tissue.names)
+pca.sds.with.title$titles <- tissue.names
+
+pdf(paste(Sys.Date(),"pca stdev.pdf"))
+ggplot(pca.sds.with.title, aes(x=titles, y=pca.sds))+
+  theme_classic(base_size = 20, base_family = "")+
+  geom_point(size=4, aes(x = factor(tissue.names, level = tissue.names)))+
+  ylim(0,2)+
+  xlab("")+
+  ylab("Standard Deviation PC1")+ theme(aspect.ratio=1)+ 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  theme(text=element_text(size=30))
+dev.off()
+```
+
+##Heat Map of Mitochondria Individually##
+```{r}
+library(ComplexHeatmap)
+library(RColorBrewer)
+
+Loc <- as.data.frame(data_mito_select$Tissue)
+
+pdf(paste(Sys.Date(),"heat map.pdf"))
+pheatmap(as.matrix(data_mito_select[,16:19]), scale="column", cluster_rows=FALSE, cluster_cols=FALSE, annotation_names_col=TRUE,fontsize=20,annotation_row=Loc,cellwidth=20,show_rownames = FALSE,color=colorRampPalette(c("navy", "white", "red"))(50))
+dev.off()
+
+```
+

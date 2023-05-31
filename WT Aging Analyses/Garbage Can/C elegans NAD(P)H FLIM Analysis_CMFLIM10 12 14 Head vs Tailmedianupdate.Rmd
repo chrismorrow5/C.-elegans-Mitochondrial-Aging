@@ -1,0 +1,57 @@
+##Plot tm line for cranial vs caudal over time plot##
+```{r}
+library(gtools)
+library(ggplot2)
+library(ggsci)
+library(tidyverse)
+library(gridExtra)
+library(scales)
+library(cluster)
+library(stringr)
+rm(list=ls())
+
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/FLIM_Mito_Median_Per_Animal_052623.csv')
+
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/WT Aging Analyses/')
+
+mytissues <- c("Cranial BWM", "Caudal BWM", "Cranial Hypodermis","Caudal Hypodermis")
+mynutrients <- c("AL")
+
+#myvars <- c("a1", "t2", "t1", "i", "tm", "Age", "Nutrients", "Tissue")
+
+data3 <- as.data.frame(subset(data_mito_animal, TissueFullName%in%mytissues))
+data <- as.data.frame(subset(data3, Nutrients%in%mynutrients))
+
+
+data$Condition <- str_c(data$Age," ", data$TissueFullName," ",data$Nutrients)
+
+##Normalize data set##
+data_norm <- data.frame(rescale(data$a1), rescale(data$t1), rescale(data$t2), rescale(log(data$i)), data$Age, data$Tissue, data$Nutrients)
+
+##Calculate Average Values
+data$Imean <- ave(data$i, data$Condition)
+data$a1mean <- ave(data$a1, data$Condition)
+data$t1mean <- ave(data$t1, data$Condition)
+data$t2mean <- ave(data$t2, data$Condition)
+data$tmmean <- ave(data$tm,data$Condition)
+myvars2 <- c("a1mean", "t2mean", "t1mean", "Imean", "tmmean", "Condition", "Age", "Nutrients", "TissueFullName")
+data_averages <- unique(data[myvars2], by ="Imean")
+
+#pdf(paste(Sys.Date(), "tm caud cran line.pdf"))
+  ggplot(data=data_averages, aes(x=Age, y=tmmean, group=TissueFullName, color=TissueFullName))+
+  geom_line(size=2)+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=30))+
+  theme(legend.position="right")
+#dev.off()
+
+```
+
+
+```{r}
+
+```
