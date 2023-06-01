@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-
-"""#Based on schmitz_r-lymphocyte_activation/helper.py 
 
 #%% Section 1 - Import required packages
 
@@ -28,7 +24,7 @@ from holoviews.plotting import list_cmaps
 def calculate_roc_rf(rf_df, key='Group'): 
     
     # Need to binarize the problem as a 'One vs. all' style approach for ROC classification
-    classes = ['SL', 'LL']
+    classes = ['LM', 'HM']
 
     #designate train/test data, random forest classifier
     X, y = rf_df.iloc[:,:-1], rf_df[[key]]
@@ -57,46 +53,15 @@ def calculate_roc_rf(rf_df, key='Group'):
     plt.yticks(fontsize = 20)
     plt.title('')
     plt.legend(loc="lower right", fontsize = 20)
-    plt.savefig('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/LL SL Analysis/CMFLIM11 13 15 Analysis_analyzedforROC.eps', format='eps')
+    plt.savefig('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/FLIM_Mito_LLSL ROC.eps', format='eps')
     plt.show()
     
     
 #%% Section 3 - Read in and set up dataframe 
+ 
+all_df = pd.read_csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/FLIM_Mito_LLSL_zscore.csv')
 
-#Read in dataframe    
-
-# all_df = pd.read_csv('Z:/0-Projects and Experiments/RS - lymphocyte activation/data/AllCellData.csv')
-all_df = pd.read_csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/LL SL Analysis/CMFLIM11 13 15 Analysis_analyzedupdatemedianonlyforROC.csv')
-
-
-# load new nk cells 
-#df_nk = pd.read_csv('Data files/UMAPs, boxplots, ROC curves (Python)/NKdonors11-29.csv')
-#df_nk = df_nk.rename(columns={'n.t1.mean' : 'NADH_t1', 
-#                              'n.t2.mean' : 'NADH_t2', 
-#                             'n.a1.mean' : 'NADH_a1', 
-#                              'n.tm.mean' : 'NADH_tm', 
-#                              'f.t1.mean' : 'FAD_t1', 
-#                              'f.t2.mean' : 'FAD_t2',
-#                              'f.a1.mean' : 'FAD_a1', 
-#                              'rr.mean' : 'Norm_RR', 
-#                              'f.tm.mean' : 'FAD_tm', 
-#                              'npix' : 'Cell_Size_Pix'
-#                              })
-
-## Concat dicts
-#df_concat = pd.concat([all_df,df_nk])
-#df_concat['Organoid'].unique()
-#df_concat['Cell_Type'].unique()
-
-#df_all = df_concat
-
-##%%
-
-#Add combination variables to data set
-#all_df.drop(['nt1', 'nt2', 'na1', 'fi', 'ft1', 'ft2', 'fa1'], axis=1, inplace=True)
 all_df['Type_Group'] = all_df['Group'] #+ ': ' + all_df['Activation']
-#all_df['Donor_Activation'] = all_df['Cell_Type'] +' '+ all_df['Donor'] + ': ' + all_df['Activation']
-#all_df['Donor_CellType'] = all_df['Donor'] + ': ' + all_df['Cell_Type'] 
 
 df_data = all_df.copy()
 
@@ -105,14 +70,12 @@ df_data = all_df.copy()
 print('Cell Type Classifier')
 
 #List of OMI variables we want in the classifier (**Make sure Activation is last item in list)
-list_omi_parameters = ['nt1', 'nt2', 'na1', 'ni', 'Group']
-#list_omi_parameters = ['ni', 'Group']
+list_omi_parameters = ['t2', 'a1', 'Group']
 
-   
 #Make copy of main data frame, pull out OMI variables we want in classifier
 all_df_edit = all_df.copy()
 all_df_edit = all_df_edit[list_omi_parameters]
-classes = ['SL', 'LL']
+classes = ['LM', 'HM']
 
 #Split training/testing data, random forest classifier
 X, y = all_df_edit.iloc[:,:-1], all_df_edit[['Group']]

@@ -59,7 +59,7 @@ pred <- as.data.frame(predict(ridge.mod.all , type = "response", newx = x[test ,
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-#pdf("all.pdf")
+pdf("all.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -70,7 +70,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
 xlim(0, 14)+
 ylim(0, 14)+
 ggtitle("All Tissues")
-#dev.off()
+dev.off()
 ```
 
 
@@ -83,6 +83,18 @@ myvars_mus <- c("Age","t.bwm.a1","t.bwm.t1","t.bwm.t2","t.bwm.i")
 data_mus <- subset(data_mus[,c(myvars_mus)], t.bwm.t1 != "#N/A")
 data_mus <- data_mus[order(data_mus$Age),]
 
+data_mus_a1_mean <- mean(as.numeric(data_mus$t.bwm.a1))
+data_mus_a1_sd <- sd(as.numeric(data_mus$t.bwm.a1))
+
+data_mus_t1_mean <- mean(as.numeric(data_mus$t.bwm.t1))
+data_mus_t1_sd <- sd(as.numeric(data_mus$t.bwm.t1))
+
+data_mus_t2_mean <- mean(as.numeric(data_mus$t.bwm.t2))
+data_mus_t2_sd <- sd(as.numeric(data_mus$t.bwm.t2))
+
+data_mus_i_mean <- mean(log(as.numeric(data_mus$t.bwm.i)))
+data_mus_i_sd <- sd(log(as.numeric(data_mus$t.bwm.i)))
+  
 data_mus$a1 <- scale(as.numeric(data_mus$t.bwm.a1))
 data_mus$t1 <- scale(as.numeric(data_mus$t.bwm.t1))
 data_mus$t2 <- scale(as.numeric(data_mus$t.bwm.t2))
@@ -110,7 +122,7 @@ pred <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x[test ,
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-#pdf("bwm.pdf")
+pdf("bwm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -121,37 +133,26 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("BWM")
-#dev.off()
+dev.off()
 
 a1_model <- lm(Age ∼ a1 , data_mus)
-#summary(bwma1_model)
-summary(a1_model)$sigma
-
 t1_model <- lm(Age ∼ t1 , data_mus)
-#summary(bwma1_model)
-summary(t1_model)$sigma
-
 t2_model <- lm(Age ∼ t2 , data_mus)
-#summary(bwma1_model)
-summary(t2_model)$sigma
-
 i_model <- lm(Age ∼ i , data_mus)
-#summary(bwma1_model)
-summary(i_model)$sigma
 
 Variable <- c("a1","t1","t2","i")
 RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sigma, summary(i_model)$sigma)
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-#pdf("bwm qual.pdf")
+pdf("bwm qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("BWM")
-#dev.off()
+dev.off()
 
 ###############
 ###############
@@ -160,11 +161,16 @@ ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
 data.dr <- subset(data[c("Nutrients",myvars_mus)], t.bwm.t1 != "#N/A")
 data.dr <- data.dr[order(data.dr$Age),]
 
-data.dr$a1 <- scale(as.numeric(data.dr$t.bwm.a1))
-data.dr$t1 <- scale(as.numeric(data.dr$t.bwm.t1))
-data.dr$t2 <- scale(as.numeric(data.dr$t.bwm.t2))
-data.dr$i <- scale(log(as.numeric(data.dr$t.bwm.i)))
+data.dr$a1 <- as.numeric(data.dr$t.bwm.a1)
+data.dr$t1 <- as.numeric(data.dr$t.bwm.t1)
+data.dr$t2 <- as.numeric(data.dr$t.bwm.t2)
+data.dr$i <- log(as.numeric(data.dr$t.bwm.i))
 
+##Scale DR with WT scaling parameters
+data.dr$a1 <- (data.dr$a1-data_mus_a1_mean)/data_mus_a1_sd
+data.dr$t1 <- (data.dr$t1-data_mus_t1_mean)/data_mus_t1_sd
+data.dr$t2 <- (data.dr$t2-data_mus_t2_mean)/data_mus_t2_sd
+data.dr$i <- (data.dr$i-data_mus_i_mean)/data_mus_i_sd
 
 data.dr <- subset(data.dr, Nutrients == "eat-2")
 data.dr <- data.dr[,-c(1,3:6)]
@@ -181,18 +187,7 @@ d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
-
-##Export predictions as a csv
-#write.csv(alc, "predictionsmusonly.csv")
-
-##Plot predictions vs known values
-
-d <- as.data.frame(y[test])
-d$ActualAge <- d$y[test]
-d$PredictedAge <- pred$s0 
-
-
-#pdf("bwm dr.pdf")
+pdf("bwm dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
   geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
@@ -206,7 +201,45 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("BWM")
-#dev.off()
+dev.off()
+
+#############
+#############
+##Predict age in LM/HM
+
+data.lmhm <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/FLIM_Mito_LLSL.csv")
+
+data.lmhm$i <- log(data.lmhm$i)
+
+##Scale DR with WT scaling parameters
+data.lmhm$a1 <- (data.lmhm$a1-data_mus_a1_mean)/data_mus_a1_sd
+data.lmhm$t1 <- (data.lmhm$t1-data_mus_t1_mean)/data_mus_t1_sd
+data.lmhm$t2 <- (data.lmhm$t2-data_mus_t2_mean)/data_mus_t2_sd
+data.lmhm$i <- (data.lmhm$i-data_mus_i_mean)/data_mus_i_sd
+
+
+x.lmhm <- model.matrix(Group ∼ . , data.lmhm) [ , -1]
+y.lmhm <- data.lmhm$Group
+test.lmhm <- 1:nrow(x.lmhm)
+
+ridge.pred.lmhm <- predict(ridge.mod.bwm , s = 0.22, newx = x.lmhm[test.lmhm , ])
+
+pred.lmhm <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.lmhm[test.lmhm , ]))
+
+d.lmhm <- as.data.frame(y.lmhm)
+d.lmhm$PredictedAge <- pred.lmhm$s0
+d.lmhm$ActualAge <- d.lmhm$y.lmhm
+
+pdf("bwm lmhm.pdf")
+ggplot(d.lmhm, aes(x=ActualAge, y=PredictedAge))+
+  theme_classic(base_size = 30, base_family = "")+
+  geom_point()+
+  ylim(0, 14)+
+  ylab("Predicted Age")+
+  xlab(element_blank())+
+  theme(aspect.ratio=1)+
+  ggtitle("BWM")
+dev.off()
 ```
 
 
@@ -218,6 +251,18 @@ data_pm <- data_pm[,-c(2:8)]
 myvars_pm <- c("Age","pm.a1","pm.t1","pm.t2","pm.i")
 data_pm <- subset(data_pm[,c(myvars_pm)], pm.t1 != "#N/A")
 data_pm <- data_pm[order(data_pm$Age),]
+
+data_pm_a1_mean <- mean(as.numeric(data_pm$pm.a1))
+data_pm_a1_sd <- sd(as.numeric(data_pm$pm.a1))
+
+data_pm_t1_mean <- mean(as.numeric(data_pm$pm.t1))
+data_pm_t1_sd <- sd(as.numeric(data_pm$pm.t1))
+
+data_pm_t2_mean <- mean(as.numeric(data_pm$pm.t2))
+data_pm_t2_sd <- sd(as.numeric(data_pm$pm.t2))
+
+data_pm_i_mean <- mean(log(as.numeric(data_pm$pm.i)))
+data_pm_i_sd <- sd(log(as.numeric(data_pm$pm.i)))
 
 data_pm$a1 <- scale(as.numeric(data_pm$pm.a1))
 data_pm$t1 <- scale(as.numeric(data_pm$pm.t1))
@@ -246,7 +291,7 @@ pred <- as.data.frame(predict(ridge.mod.pm , type = "response", newx = x[test , 
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-#pdf("pm.pdf")
+pdf("pm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -257,38 +302,76 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("PM")
-#dev.off()
+dev.off()
 
 
 a1_model <- lm(Age ∼ a1 , data_pm)
-#summary(bwma1_model)
-summary(a1_model)$sigma
-
 t1_model <- lm(Age ∼ t1 , data_pm)
-#summary(bwma1_model)
-summary(t1_model)$sigma
-
 t2_model <- lm(Age ∼ t2 , data_pm)
-#summary(bwma1_model)
-summary(t2_model)$sigma
-
 i_model <- lm(Age ∼ i , data_pm)
-#summary(bwma1_model)
-summary(i_model)$sigma
 
 Variable <- c("a1","t1","t2","i")
 RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sigma, summary(i_model)$sigma)
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-#pdf("pm qual.pdf")
+pdf("pm qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("PM")
-#dev.off()
+dev.off()
+
+###############
+###############
+
+#Make predictions for DR data set
+data.dr.pm <- subset(data[c("Nutrients",myvars_pm)], pm.t1 != "#N/A")
+data.dr.pm <- data.dr.pm[order(data.dr.pm$Age),]
+
+data.dr.pm$a1 <- as.numeric(data.dr.pm$pm.a1)
+data.dr.pm$t1 <- as.numeric(data.dr.pm$pm.t1)
+data.dr.pm$t2 <- as.numeric(data.dr.pm$pm.t2)
+data.dr.pm$i <- log(as.numeric(data.dr.pm$pm.i))
+
+##Scale DR with WT scaling parameters
+data.dr.pm$a1 <- (data.dr.pm$a1-data_pm_a1_mean)/data_pm_a1_sd
+data.dr.pm$t1 <- (data.dr.pm$t1-data_pm_t1_mean)/data_pm_t1_sd
+data.dr.pm$t2 <- (data.dr.pm$t2-data_pm_t2_mean)/data_pm_t2_sd
+data.dr.pm$i <- (data.dr.pm$i-data_pm_i_mean)/data_pm_i_sd
+
+data.dr.pm <- subset(data.dr.pm, Nutrients == "eat-2")
+data.dr.pm <- data.dr.pm[,-c(1,3:6)]
+
+x.dr <- model.matrix( Age ∼ . , data.dr.pm) [ , -1]
+y.dr <- data.dr.pm$Age
+test.dr <- 1:nrow(x.dr)
+
+ridge.pred.dr <- predict(ridge.mod.bwm , s = 0.22, newx = x.dr[test.dr , ])
+
+pred.dr <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.dr[test.dr , ]))
+
+d.dr <- as.data.frame(y.dr)
+d.dr$PredictedAge <- pred.dr$s0
+d.dr$ActualAge <- d.dr$y.dr
+
+pdf("pm dr.pdf")
+ggplot(NULL)+
+  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
+  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
+theme_classic(base_size = 30, base_family = "")+
+coord_fixed()+
+#geom_violin()+
+geom_point(aes())+
+ylab("Predicted Age")+
+xlab("Chronologic Age")+
+geom_abline(intercept = 0, slope = 1, color="blue")+
+  xlim(0, 14)+
+  ylim(0, 14)+
+  ggtitle("PM")
+dev.off()
 ```
 
 
@@ -301,6 +384,17 @@ myvars_hyp <- c("Age","t.h.a1","t.h.t1","t.h.t2","t.h.i")
 data_hyp <- subset(data_hyp[,c(myvars_hyp)], t.h.t1 != "#N/A")
 data_hyp <- data_hyp[order(data_hyp$Age),]
 
+data_hyp_a1_mean <- mean(as.numeric(data_hyp$t.h.a1))
+data_hyp_a1_sd <- sd(as.numeric(data_hyp$t.h.a1))
+
+data_hyp_t1_mean <- mean(as.numeric(data_hyp$t.h.t1))
+data_hyp_t1_sd <- sd(as.numeric(data_hyp$t.h.t1))
+
+data_hyp_t2_mean <- mean(as.numeric(data_hyp$t.h.t2))
+data_hyp_t2_sd <- sd(as.numeric(data_hyp$t.h.t2))
+
+data_hyp_i_mean <- mean(log(as.numeric(data_hyp$t.h.i)))
+data_hyp_i_sd <- sd(log(as.numeric(data_hyp$t.h.i)))
 
 data_hyp$a1 <- scale(as.numeric(data_hyp$t.h.a1))
 data_hyp$t1 <- scale(as.numeric(data_hyp$t.h.t1))
@@ -336,7 +430,7 @@ pred <- as.data.frame(predict(ridge.mod.hyp , type = "response", newx = x[test ,
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-#pdf("hyp.pdf")
+pdf("hyp.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -348,142 +442,61 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("Hypodermis")
-#dev.off()
+dev.off()
 
 a1_model <- lm(Age ∼ a1 , data_hyp)
-#summary(bwma1_model)
-summary(a1_model)$sigma
-
 t1_model <- lm(Age ∼ t1 , data_hyp)
-#summary(bwma1_model)
-summary(t1_model)$sigma
-
 t2_model <- lm(Age ∼ t2 , data_hyp)
-#summary(bwma1_model)
-summary(t2_model)$sigma
-
 i_model <- lm(Age ∼ i , data_hyp)
-#summary(bwma1_model)
-summary(i_model)$sigma
 
 Variable <- c("a1","t1","t2","i")
 RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sigma, summary(i_model)$sigma)
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-#pdf("Hyp qual.pdf")
+pdf("Hyp qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("Hypodermis")
-#dev.off()
-```
+dev.off()
 
-
-
-
-
-
-
-
-
-
-
-
-####Keep going from here!!!
-
-
-
-
-##Predict Age of DR animals based on BWM clock##
-```{r}
-##Load packages and set seed to make script reproducible
-library ( ISLR2 )
-library(glmnet)
-library (leaps)
-library(ggplot2)
-library(caret)
-library(scales)
-set.seed(1)
-
-##Read data in to R and generate test and train data set
-data <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data <- subset(data, Nutrients != "DR")
-data <- data[,-c(2:5)]
-data <- subset(data[,-c(2:5, 10:13)], t.bwm.t1 != "#N/A")
-data <- data[order(data$Age),]
-data$logI <- log10(as.numeric(data$t.bwm.i))
-data <- data[,-5]
-
-data$a1 <- scale(as.numeric(data$t.bwm.a1))
-data$t1 <- scale(as.numeric(data$t.bwm.t1))
-data$t2 <- scale(as.numeric(data$t.bwm.t2))
-data$i <- scale(as.numeric(data$logI))
-data <- data[,-(2:5)]
-
-x <- model.matrix( Age ∼ . , data) [ , -1]
-y <- data$Age
-train <- sample(1:nrow(x), nrow(x)/2)
-test <- setdiff(1:nrow(x), train)
-y.test <- y[test]
-
-##Find the optimal lambda value for model
-cv.out <- cv.glmnet(x[train , ], y[train], alpha = 0)
-cv.out$lambda.min
-
-##Make a model - lambda=0 makes this least squares, alpha=1 makes this lasso, alpha=0 makes this ridge regression
-ridge.mod <- glmnet(x[train,], y[train], alpha = 1, lambda = 0.22)
-ridge.pred <- predict(ridge.mod , s = 0.22, newx = x[test , ])
-
-##Calculate the mean squared error (MSE)
-mean((ridge.pred-y.test)^2)
-
-##Make predictions for the test set using the model built
-pred <- as.data.frame(predict(ridge.mod , type = "response", newx = x[test , ]))
-
+###############
+###############
 
 #Make predictions for DR data set
-data.dr <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data.dr <- subset(data.dr, Nutrients == "DR")
-data.dr <- data.dr[,-c(2:5)]
-data.dr <- subset(data.dr[,-c(2:5, 10:13)], t.bwm.t1 != "#N/A")
-data.dr <- data.dr[order(data.dr$Age),]
-data.dr$logI <- log10(as.numeric(data.dr$t.bwm.i))
-data.dr <- data.dr[,-5]
+data.dr.hyp <- subset(data[c("Nutrients",myvars_hyp)], t.h.t1 != "#N/A")
+data.dr.hyp <- data.dr.hyp[order(data.dr.hyp$Age),]
 
-data.dr$a1 <- scale(as.numeric(data.dr$t.bwm.a1))
-data.dr$t1 <- scale(as.numeric(data.dr$t.bwm.t1))
-data.dr$t2 <- scale(as.numeric(data.dr$t.bwm.t2))
-data.dr$i <- scale(as.numeric(data.dr$logI))
-data.dr <- data.dr[,-(2:5)]
+data.dr.hyp$a1 <- as.numeric(data.dr.hyp$t.h.a1)
+data.dr.hyp$t1 <- as.numeric(data.dr.hyp$t.h.t1)
+data.dr.hyp$t2 <- as.numeric(data.dr.hyp$t.h.t2)
+data.dr.hyp$i <- log(as.numeric(data.dr.hyp$t.h.i))
 
-x.dr <- model.matrix( Age ∼ . , data.dr) [ , -1]
-y.dr <- data.dr$Age
+##Scale DR with WT scaling parameters
+data.dr.hyp$a1 <- (data.dr.hyp$a1-data_hyp_a1_mean)/data_hyp_a1_sd
+data.dr.hyp$t1 <- (data.dr.hyp$t1-data_hyp_t1_mean)/data_hyp_t1_sd
+data.dr.hyp$t2 <- (data.dr.hyp$t2-data_hyp_t2_mean)/data_hyp_t2_sd
+data.dr.hyp$i <- (data.dr.hyp$i-data_hyp_i_mean)/data_hyp_i_sd
+
+data.dr.hyp <- subset(data.dr.hyp, Nutrients == "eat-2")
+data.dr.hyp <- data.dr.hyp[,-c(1,3:6)]
+
+x.dr <- model.matrix( Age ∼ . , data.dr.hyp) [ , -1]
+y.dr <- data.dr.hyp$Age
 test.dr <- 1:nrow(x.dr)
 
-ridge.pred.dr <- predict(ridge.mod , s = 0.22, newx = x.dr[test.dr , ])
+ridge.pred.dr <- predict(ridge.mod.bwm , s = 0.22, newx = x.dr[test.dr , ])
 
-pred.dr <- as.data.frame(predict(ridge.mod , type = "response", newx = x.dr[test.dr , ]))
+pred.dr <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.dr[test.dr , ]))
 
 d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
-
-
-##Export predictions as a csv
-#write.csv(alc, "predictionsmusonly.csv")
-
-##Plot predictions vs known values
-
-d <- as.data.frame(y[test])
-d$ActualAge <- d$y[test]
-d$PredictedAge <- pred$s0 
-
-
-#pdf("bwm dr.pdf")
+pdf("hyp dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
   geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
@@ -496,213 +509,18 @@ xlab("Chronologic Age")+
 geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
-  ggtitle("BWM")
-#dev.off()
+  ggtitle("hyp")
+dev.off()
+
+
 ```
 
 
-##Predict Age of DR animals based on Hypodermis clock##
-```{r}
-##Load packages and set seed to make script reproducible
-library ( ISLR2 )
-library(glmnet)
-library (leaps)
-library(ggplot2)
-library(caret)
-library(scales)
-set.seed(1)
-
-##Read data in to R and generate test and train data set
-data <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data <- subset(data, Nutrients != "DR")
-data <- data[,-c(2:5)]
-data <- subset(data[,-c(6:13)], t.h.t1 != "#N/A")
-data <- data[order(data$Age),]
-data$logI <- log10(as.numeric(data$t.h.i))
-data <- data[,-5]
-
-data$a1 <- scale(as.numeric(data$t.h.a1))
-data$t1 <- scale(as.numeric(data$t.h.t1))
-data$t2 <- scale(as.numeric(data$t.h.t2))
-data$i <- scale(as.numeric(data$logI))
-data <- data[,-(2:5)]
-
-x <- model.matrix( Age ∼ . , data) [ , -1]
-y <- data$Age
-train <- sample(1:nrow(x), nrow(x)/2)
-test <- setdiff(1:nrow(x), train)
-y.test <- y[test]
-
-##Find the optimal lambda value for model
-cv.out <- cv.glmnet(x[train , ], y[train], alpha = 0)
-cv.out$lambda.min
-
-##Make a model - lambda=0 makes this least squares, alpha=1 makes this lasso, alpha=0 makes this ridge regression
-ridge.mod <- glmnet(x[train,], y[train], alpha = 1, lambda = 0.22)
-ridge.pred <- predict(ridge.mod , s = 0.22, newx = x[test , ])
-
-##Calculate the mean squared error (MSE)
-mean((ridge.pred-y.test)^2)
-
-##Make predictions for the test set using the model built
-pred <- as.data.frame(predict(ridge.mod , type = "response", newx = x[test , ]))
-
-
-#Make predictions for DR data set
-data.dr <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data.dr <- subset(data.dr, Nutrients == "DR")
-data.dr <- data.dr[,-c(2:5)]
-data.dr <- subset(data.dr[,-c(6:13)], t.h.t1 != "#N/A")
-data.dr <- data.dr[order(data.dr$Age),]
-data.dr$logI <- log10(as.numeric(data.dr$t.h.i))
-data.dr <- data.dr[,-5]
-
-data.dr$a1 <- scale(as.numeric(data.dr$t.h.a1))
-data.dr$t1 <- scale(as.numeric(data.dr$t.h.t1))
-data.dr$t2 <- scale(as.numeric(data.dr$t.h.t2))
-data.dr$i <- scale(as.numeric(data.dr$logI))
-data.dr <- data.dr[,-(2:5)]
-
-x.dr <- model.matrix( Age ∼ . , data.dr) [ , -1]
-y.dr <- data.dr$Age
-test.dr <- 1:nrow(x.dr)
-
-ridge.pred.dr <- predict(ridge.mod , s = 0.22, newx = x.dr[test.dr , ])
-
-pred.dr <- as.data.frame(predict(ridge.mod , type = "response", newx = x.dr[test.dr , ]))
-
-d.dr <- as.data.frame(y.dr)
-d.dr$PredictedAge <- pred.dr$s0
-d.dr$ActualAge <- d.dr$y.dr
 
 
 
-##Export predictions as a csv
-#write.csv(alc, "predictionsmusonly.csv")
-
-##Plot predictions vs known values
-
-d <- as.data.frame(y[test])
-d$ActualAge <- d$y[test]
-d$PredictedAge <- pred$s0 
-
-
-#pdf("hyp dr.pdf")
-ggplot(NULL)+
-  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
-  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
-theme_classic(base_size = 30, base_family = "")+
-coord_fixed()+
-#geom_violin()+
-geom_point(aes())+
-ylab("Predicted Age")+
-xlab("Chronologic Age")+
-geom_abline(intercept = 0, slope = 1, color="blue")+
-  xlim(0, 14)+
-  ylim(0, 14)+
-  ggtitle("Hypodermis")
-#dev.off()
-```
-
-##Predict Age of DR animals based on PM clock##
-```{r}
-##Load packages and set seed to make script reproducible
-library ( ISLR2 )
-library(glmnet)
-library (leaps)
-library(ggplot2)
-library(caret)
-library(scales)
-set.seed(1)
-
-##Read data in to R and generate test and train data set
-data <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data <- subset(data, Nutrients != "DR")
-data <- data[,-c(2:5)]
-data <- subset(data[,-c(2:9)], pm.t1 != "#N/A")
-data <- data[order(data$Age),]
-data$logI <- log10(as.numeric(data$pm.i))
-data <- data[,-5]
-
-data$a1 <- scale(as.numeric(data$pm.a1))
-data$t1 <- scale(as.numeric(data$pm.t1))
-data$t2 <- scale(as.numeric(data$pm.t2))
-data$i <- scale(as.numeric(data$logI))
-data <- data[,-(2:5)]
-
-x <- model.matrix( Age ∼ . , data) [ , -1]
-y <- data$Age
-train <- sample(1:nrow(x), nrow(x)/2)
-test <- setdiff(1:nrow(x), train)
-y.test <- y[test]
-
-##Find the optimal lambda value for model
-cv.out <- cv.glmnet(x[train , ], y[train], alpha = 0)
-cv.out$lambda.min
-
-##Make a model - lambda=0 makes this least squares, alpha=1 makes this lasso, alpha=0 makes this ridge regression
-ridge.mod <- glmnet(x[train,], y[train], alpha = 1, lambda = 0.22)
-ridge.pred <- predict(ridge.mod , s = 0.22, newx = x[test , ])
-
-##Calculate the mean squared error (MSE)
-mean((ridge.pred-y.test)^2)
-
-##Make predictions for the test set using the model built
-pred <- as.data.frame(predict(ridge.mod , type = "response", newx = x[test , ]))
-
-
-#Make predictions for DR data set
-data.dr <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Linear Regression Models/Data_052423.csv")
-data.dr <- subset(data.dr, Nutrients == "DR")
-data.dr <- data.dr[,-c(2:5)]
-data.dr <- subset(data.dr[,-c(2:9)], pm.t1 != "#N/A")
-data.dr <- data.dr[order(data.dr$Age),]
-data.dr$logI <- log10(as.numeric(data.dr$pm.i))
-data.dr <- data.dr[,-5]
-
-data.dr$a1 <- scale(as.numeric(data.dr$pm.a1))
-data.dr$t1 <- scale(as.numeric(data.dr$pm.t1))
-data.dr$t2 <- scale(as.numeric(data.dr$pm.t2))
-data.dr$i <- scale(as.numeric(data.dr$logI))
-data.dr <- data.dr[,-(2:5)]
-
-x.dr <- model.matrix( Age ∼ . , data.dr) [ , -1]
-y.dr <- data.dr$Age
-test.dr <- 1:nrow(x.dr)
-
-ridge.pred.dr <- predict(ridge.mod , s = 0.22, newx = x.dr[test.dr , ])
-
-pred.dr <- as.data.frame(predict(ridge.mod , type = "response", newx = x.dr[test.dr , ]))
-
-d.dr <- as.data.frame(y.dr)
-d.dr$PredictedAge <- pred.dr$s0
-d.dr$ActualAge <- d.dr$y.dr
 
 
 
-##Export predictions as a csv
-#write.csv(alc, "predictionsmusonly.csv")
-
-##Plot predictions vs known values
-
-d <- as.data.frame(y[test])
-d$ActualAge <- d$y[test]
-d$PredictedAge <- pred$s0 
 
 
-#pdf("pm dr.pdf")
-ggplot(NULL)+
-  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
-  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
-theme_classic(base_size = 30, base_family = "")+
-coord_fixed()+
-#geom_violin()+
-geom_point(aes())+
-ylab("Predicted Age")+
-xlab("Chronologic Age")+
-geom_abline(intercept = 0, slope = 1, color="blue")+
-  xlim(0, 14)+
-  ylim(0, 14)+
-  ggtitle("PM")
-#dev.off()
-```
