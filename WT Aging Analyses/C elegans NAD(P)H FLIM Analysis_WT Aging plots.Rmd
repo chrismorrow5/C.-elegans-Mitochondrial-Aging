@@ -10,6 +10,7 @@ library(scales)
 library(cluster)
 library(stringr)
 library(ggsignif)
+library(corrplot)
 rm(list=ls())
 
 setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/WT Aging Analyses/')
@@ -493,4 +494,19 @@ ggplot(data_tm, aes(x=Age, y=t.bwm.tm))+
   theme(aspect.ratio = 1)
 #dev.off()
 ```
+##Corr plot tissue/tissue
+```{r}
 
+myvars4 <- c("t.h.tm", "t.bwm.tm","pm.tm")
+
+data_cor <- select(data_mito_animal_matrix_al, myvars4)
+data_cor <- subset(data_cor, t.bwm.tm != '#N/A' & t.h.tm != '#N/A' & pm.tm != '#N/A')
+data_cor$t.bwm.tm <- as.numeric(data_cor$t.bwm.tm)
+data_cor$t.h.tm <- as.numeric(data_cor$t.h.tm)
+data_cor$pm.tm <- as.numeric(data_cor$pm.tm)
+
+#pdf("all cor tm.pdf")
+mydata.cor = cor(data_cor)
+corrplot(mydata.cor, method = "color")
+#dev.off()
+```

@@ -7,25 +7,27 @@ library(tidyverse)
 library(gridExtra)
 library(scales)
 library(ggsignif)
+library(dplyr)
+library(mice)
 rm(list=ls())
 
-data <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/HM LM Analysis/FLIM_Mito_LLSL.csv')
+data <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/FLIM_Mito_LLSL.csv')
 
-setwd("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/Data Analysis/HM LM Analysis/")
+setwd("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/")
 
-data$tm <- ((data$na1 * data$nt1)+((1-data$na1) * data$nt2))
+data$tm <- ((data$a1 * data$t1)+((1-data$a1) * data$t2))
 
-data$na1s <- scale(data$na1)
-data$nt1s <- scale(data$nt1)
-data$nt2s <- scale(data$nt2)
-data$nis <- scale(log(data$ni))
+data$a1s <- scale(data$a1)
+data$t1s <- scale(data$t1)
+data$t2s <- scale(data$t2)
+data$is <- scale(log(data$i))
 
 ```
 
 ##Plot Intensity##
 ```{r}
 #pdf(paste(Sys.Date()," I.pdf"))
-ggplot(data=data, aes(x=Group, y=ni, col=Group))+
+ggplot(data=data, aes(x=Group, y=i, col=Group))+
   geom_signif(comparisons = list(c("HM","LM")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   geom_violin(size=1)+
   stat_summary(fun.data="mean_cl_boot", size=1)+
@@ -59,7 +61,7 @@ ggplot(data=data, aes(x=Group, y=ni, col=Group))+
 ##Plot a1##
 ```{r}
 #pdf(paste(Sys.Date()," a1.pdf"))
-  ggplot(data=data, aes(x=Group, y=na1, col=Group))+
+  ggplot(data=data, aes(x=Group, y=a1, col=Group))+
     geom_signif(comparisons = list(c("HM","LM")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   geom_violin(size=1)+
   stat_summary(fun.data="mean_cl_boot", size=1)+
@@ -76,7 +78,7 @@ ggplot(data=data, aes(x=Group, y=ni, col=Group))+
 ##Plot t1##
 ```{r}
 #pdf(paste(Sys.Date()," t1.pdf"))
-ggplot(data=data, aes(x=Group, y=nt1, col=Group))+
+ggplot(data=data, aes(x=Group, y=t1, col=Group))+
 geom_violin(size=1)+
 geom_signif(comparisons = list(c("HM","LM")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
 stat_summary(fun.data="mean_cl_boot", size=1)+
@@ -94,7 +96,7 @@ theme(text=element_text(size=40))
 ##Plot t2##
 ```{r}
 #pdf(paste(Sys.Date()," t2.pdf"))
-ggplot(data=data, aes(x=Group, y=nt2, col=Group))+
+ggplot(data=data, aes(x=Group, y=t2, col=Group))+
   geom_violin(size=1)+
     geom_signif(comparisons = list(c("HM","LM")), col="black", map_signif_level = TRUE, size=1, textsize=20)+
   stat_summary(fun.data="mean_cl_boot", size=1)+
@@ -111,11 +113,34 @@ ggplot(data=data, aes(x=Group, y=nt2, col=Group))+
 
 ##PCA NOT NOT WITH Y O##
 ```{r}
-pca <- prcomp(data[,1:4], scale=TRUE)
-pca.var <- pca$sdev^2
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+data_lmhm <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/HM LM Analysis/FLIM_Mito_LLSL.csv')
 
-pcadata <- data.frame(pca$x[,1], pca$x[,2], Group=data$Group)
+data_mito_animal <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/FLIM_Mito_Median_Per_Animal_052623.csv')
+
+myages_yo <- c("1","11")
+mytissues_mus <- "Caudal BWM"
+mynutrients_al <- "WT"
+
+data_mito_animal_yo_caudaulbwm_wt <- subset(data_mito_animal, Nutrients%in%mynutrients_al)
+data_mito_animal_yo_caudaulbwm_wt <- subset(data_mito_animal_yo_caudaulbwm_wt, TissueFullName%in%mytissues_mus)
+data_mito_animal_yo_caudaulbwm_wt <- subset(data_mito_animal_yo_caudaulbwm_wt, Age%in%myages_yo)
+data_mito_animal_yo_caudaulbwm_wt$Group <- as.character(data_mito_animal_yo_caudaulbwm_wt$Age)
+myvars <- c("a1","t1","t2","i","Group")
+data_mito_animal_yo_caudaulbwm_wt <- data_mito_animal_yo_caudaulbwm_wt[myvars]
+
+data_merge <- rbind(data_lmhm, data_mito_animal_yo_caudaulbwm_wt)
+
+data_merge$a1 <- scale(data_merge$a1)
+data_merge$t1 <- scale(data_merge$t1)
+data_merge$t2 <- scale(data_merge$t2)
+data_merge$i <- scale(data_merge$i)
+
+data_merge[data_merge == "1"] <- "Young"
+data_merge[data_merge == "11"] <- "Old"
+
+pca <- prcomp(data_merge[,1:4], scale=TRUE)
+
+pcadata <- data.frame(pca$x[,1], pca$x[,2], Group=data_merge$Group)
 
 #pdf(paste(Sys.Date()," pca not with y o.pdf"))
 ggplot(pcadata, aes(x=pca$x[,1], y=pca$x[,2], col=Group))+
