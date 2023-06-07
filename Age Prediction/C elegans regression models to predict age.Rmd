@@ -189,9 +189,9 @@ d.dr$ActualAge <- d.dr$y.dr
 
 pdf("bwm dr.pdf")
 ggplot(NULL)+
-  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
-  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
-theme_classic(base_size = 30, base_family = "")+
+  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
+  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
+theme_classic(base_size = 25, base_family = "")+
 coord_fixed()+
 #geom_violin()+
 geom_point(aes())+
@@ -359,9 +359,9 @@ d.dr$ActualAge <- d.dr$y.dr
 
 pdf("pm dr.pdf")
 ggplot(NULL)+
-  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
-  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
-theme_classic(base_size = 30, base_family = "")+
+  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
+  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
+theme_classic(base_size = 25, base_family = "")+
 coord_fixed()+
 #geom_violin()+
 geom_point(aes())+
@@ -498,9 +498,9 @@ d.dr$ActualAge <- d.dr$y.dr
 
 pdf("hyp dr.pdf")
 ggplot(NULL)+
-  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="dr"))+
-  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="wt"))+
-theme_classic(base_size = 30, base_family = "")+
+  geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
+  geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
+theme_classic(base_size = 25, base_family = "")+
 coord_fixed()+
 #geom_violin()+
 geom_point(aes())+
@@ -509,7 +509,7 @@ xlab("Chronologic Age")+
 geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
-  ggtitle("hyp")
+  ggtitle("Hypodermis")
 dev.off()
 
 

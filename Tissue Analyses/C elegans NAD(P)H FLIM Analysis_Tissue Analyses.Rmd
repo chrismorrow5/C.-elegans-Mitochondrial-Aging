@@ -8,6 +8,8 @@ library(tidyverse)
 library(gridExtra)
 library(scales)
 library(cluster)
+library(ggsignif)
+library(ggpubr)
 rm(list=ls())
 set.seed(1)
 
@@ -29,9 +31,12 @@ data_mito_animal_select <- subset(data_mito_animal, Nutrients%in%mynutrients & A
 
 ##Plot Intensity##
 ```{r}
-pdf(paste(Sys.Date(),"I.pdf"))
+#my_comparisons = list(c("BWM","Germline"),c("BWM","PM"),c("BWM","Hypodermis"))
+
+#pdf(paste(Sys.Date(),"I.pdf"))
 ggplot(data=data_mito_animal_select, aes(x=Tissue, y=i, color=Tissue))+
   geom_violin(size=1)+
+  #stat_compare_means(comparisons = my_comparisons, label = "p.signif", label.y = c(16000,   17000, 18000),size=8)+
   stat_summary(fun.data="mean_cl_boot", size=1)+
   theme_classic(base_size = 20, base_family = "")+
   theme(legend.position = "none")+
@@ -39,8 +44,9 @@ ggplot(data=data_mito_animal_select, aes(x=Tissue, y=i, color=Tissue))+
   xlab(element_blank())+
   theme(aspect.ratio=1)+
   theme(text=element_text(size=30))+ 
+  #ylim(0,24000)+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-dev.off()
+#dev.off()
 ```
 
 ####Plot tm##
