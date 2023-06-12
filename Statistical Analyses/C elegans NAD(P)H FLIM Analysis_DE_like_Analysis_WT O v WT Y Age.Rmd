@@ -13,7 +13,7 @@ library(forcats)
 library(limma)
 rm(list=ls())
 
-setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/DR Analyses/')
+setwd('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/Statistical Analyses/')
 
 data_mito_animal_matrix <- read.csv('C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/FLIM_Mito_Median_Per_Animal_Animal_Matrix_052623.csv')
 

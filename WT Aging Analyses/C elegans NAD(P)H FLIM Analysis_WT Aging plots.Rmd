@@ -505,7 +505,7 @@ data_cor$t.bwm.tm <- as.numeric(data_cor$t.bwm.tm)
 data_cor$t.h.tm <- as.numeric(data_cor$t.h.tm)
 data_cor$pm.tm <- as.numeric(data_cor$pm.tm)
 
-#pdf("all cor tm.pdf")
+#pdf(paste(Sys.Date()," all cor tm.pdf"))
 mydata.cor = cor(data_cor)
 corrplot(mydata.cor, method = "color")
 #dev.off()
