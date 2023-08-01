@@ -55,11 +55,13 @@ ridge.pred <- predict(ridge.mod.all , s = 0.22, newx = x[test , ])
 ##Make predictions for the test set using the model built
 pred <- as.data.frame(predict(ridge.mod.all , type = "response", newx = x[test , ]))
 
+rmse.all <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
+
 ##Plot predictions vs known values
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-pdf("all.pdf")
+#pdf("all.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -70,7 +72,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
 xlim(0, 14)+
 ylim(0, 14)+
 ggtitle("All Tissues")
-dev.off()
+#dev.off()
 ```
 
 
@@ -118,11 +120,13 @@ ridge.pred <- predict(ridge.mod.bwm , s = 0.22, newx = x[test , ])
 ##Make predictions for the test set using the model built
 pred <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x[test , ]))
 
+rmse.bwm <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
+
 ##Plot predictions vs known values
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-pdf("bwm.pdf")
+#pdf("bwm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -133,7 +137,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("BWM")
-dev.off()
+#dev.off()
 
 a1_model <- lm(Age ∼ a1 , data_mus)
 t1_model <- lm(Age ∼ t1 , data_mus)
@@ -145,14 +149,14 @@ RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sig
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-pdf("bwm qual.pdf")
+#pdf("bwm qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("BWM")
-dev.off()
+#dev.off()
 
 ###############
 ###############
@@ -187,7 +191,7 @@ d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
-pdf("bwm dr.pdf")
+#pdf("bwm dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
   geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
@@ -201,7 +205,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("BWM")
-dev.off()
+#dev.off()
 
 #############
 #############
@@ -230,7 +234,7 @@ d.lmhm <- as.data.frame(y.lmhm)
 d.lmhm$PredictedAge <- pred.lmhm$s0
 d.lmhm$ActualAge <- d.lmhm$y.lmhm
 
-pdf("bwm lmhm.pdf")
+#pdf("bwm lmhm.pdf")
 ggplot(d.lmhm, aes(x=ActualAge, y=PredictedAge))+
   theme_classic(base_size = 30, base_family = "")+
   geom_point()+
@@ -239,7 +243,7 @@ ggplot(d.lmhm, aes(x=ActualAge, y=PredictedAge))+
   xlab(element_blank())+
   theme(aspect.ratio=1)+
   ggtitle("BWM")
-dev.off()
+#dev.off()
 ```
 
 
@@ -287,11 +291,13 @@ ridge.pred <- predict(ridge.mod.pm , s = 0.22, newx = x[test , ])
 ##Make predictions for the test set using the model built
 pred <- as.data.frame(predict(ridge.mod.pm , type = "response", newx = x[test , ]))
 
+rmse.pm <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
+
 ##Plot predictions vs known values
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-pdf("pm.pdf")
+#pdf("pm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -302,7 +308,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("PM")
-dev.off()
+#dev.off()
 
 
 a1_model <- lm(Age ∼ a1 , data_pm)
@@ -315,14 +321,14 @@ RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sig
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-pdf("pm qual.pdf")
+#pdf("pm qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("PM")
-dev.off()
+#dev.off()
 
 ###############
 ###############
@@ -357,7 +363,7 @@ d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
-pdf("pm dr.pdf")
+#pdf("pm dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
   geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
@@ -371,7 +377,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("PM")
-dev.off()
+#dev.off()
 ```
 
 
@@ -422,6 +428,7 @@ mean((ridge.pred-y.test)^2)
 ##Make predictions for the test set using the model built
 pred <- as.data.frame(predict(ridge.mod.hyp , type = "response", newx = x[test , ]))
 
+rmse.hyp <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
 
 ##Export predictions as a csv
 #write.csv(alc, "predictionsmusonly.csv")
@@ -430,7 +437,7 @@ pred <- as.data.frame(predict(ridge.mod.hyp , type = "response", newx = x[test ,
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
-pdf("hyp.pdf")
+#pdf("hyp.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
 coord_fixed()+
@@ -442,7 +449,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("Hypodermis")
-dev.off()
+#dev.off()
 
 a1_model <- lm(Age ∼ a1 , data_hyp)
 t1_model <- lm(Age ∼ t1 , data_hyp)
@@ -454,14 +461,14 @@ RSE <- c(summary(a1_model)$sigma, summary(t1_model)$sigma, summary(t2_model)$sig
 
 Stat_sum_data <- data.frame(Variable, RSE)
 
-pdf("Hyp qual.pdf")
+#pdf("Hyp qual.pdf")
 ggplot(Stat_sum_data, aes(x=Variable, y=RSE))+
   theme_classic(base_size = 30, base_family = "")+
   ylim(2.8, 4)+
   geom_point(size=4, aes())+
   theme(aspect.ratio=1)+
   ggtitle("Hypodermis")
-dev.off()
+#dev.off()
 
 ###############
 ###############
@@ -496,7 +503,7 @@ d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
-pdf("hyp dr.pdf")
+#pdf("hyp dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
   geom_point(data=d, aes(x=y[test]-0.22, y=PredictedAge, color="WT"))+
@@ -510,7 +517,7 @@ geom_abline(intercept = 0, slope = 1, color="blue")+
   xlim(0, 14)+
   ylim(0, 14)+
   ggtitle("Hypodermis")
-dev.off()
+#dev.off()
 
 
 ```
