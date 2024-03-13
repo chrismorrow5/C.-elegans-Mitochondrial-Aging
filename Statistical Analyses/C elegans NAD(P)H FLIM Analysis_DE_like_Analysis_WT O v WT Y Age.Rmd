@@ -28,22 +28,25 @@ data_mito_animal_matrix_al_yo <- subset(data_mito_animal_matrix_al, Age%in%myage
 
 ```
 
+
 ##Limma Analysis of Day 1 vs Day 11 bwm
 ```{r}
-myvars_mus <- c("Condition","t.bwm.a1","t.bwm.t1","t.bwm.t2","t.bwm.i")
+myvars_mus <- c("Condition","t.bwm.a1","t.bwm.t1","t.bwm.t2","t.bwm.i", "t.bwm.tm")
 data_mito_animal_matrix_al_yo_mus <- data_mito_animal_matrix_al_yo[myvars_mus]
 data_mito_animal_matrix_al_yo_mus <- data_mito_animal_matrix_al_yo_mus[data_mito_animal_matrix_al_yo_mus$t.bwm.a1 != "#N/A",]
 data_mito_animal_matrix_al_yo_mus$t.bwm.a1 <- as.numeric(data_mito_animal_matrix_al_yo_mus$t.bwm.a1)
 data_mito_animal_matrix_al_yo_mus$t.bwm.t1 <- as.numeric(data_mito_animal_matrix_al_yo_mus$t.bwm.t1)
 data_mito_animal_matrix_al_yo_mus$t.bwm.t2 <- as.numeric(data_mito_animal_matrix_al_yo_mus$t.bwm.t2)
 data_mito_animal_matrix_al_yo_mus$t.bwm.i <- as.numeric(data_mito_animal_matrix_al_yo_mus$t.bwm.i)
+data_mito_animal_matrix_al_yo_mus$t.bwm.tm <- as.numeric(data_mito_animal_matrix_al_yo_mus$t.bwm.tm)
 
-data_mito_animal_matrix_al_yo_mus_sum <- aggregate(data_mito_animal_matrix_al_yo_mus[,2:5], by=list(Condition=data_mito_animal_matrix_al_yo_mus$Condition), FUN=mean)
+data_mito_animal_matrix_al_yo_mus_sum <- aggregate(data_mito_animal_matrix_al_yo_mus[,2:6], by=list(Condition=data_mito_animal_matrix_al_yo_mus$Condition), FUN=mean)
 
 mus_a1_logFC <- log(data_mito_animal_matrix_al_yo_mus_sum[2,2]/data_mito_animal_matrix_al_yo_mus_sum[1,2])
 mus_t1_logFC <- log(data_mito_animal_matrix_al_yo_mus_sum[2,3]/data_mito_animal_matrix_al_yo_mus_sum[1,3])
 mus_t2_logFC <- log(data_mito_animal_matrix_al_yo_mus_sum[2,4]/data_mito_animal_matrix_al_yo_mus_sum[1,4])
 mus_i_logFC <- log(data_mito_animal_matrix_al_yo_mus_sum[2,5]/data_mito_animal_matrix_al_yo_mus_sum[1,5])
+mus_tm_logFC <- log(data_mito_animal_matrix_al_yo_mus_sum[2,6]/data_mito_animal_matrix_al_yo_mus_sum[1,6])
 
 design <- model.matrix(~Condition, data=data_mito_animal_matrix_al_yo_mus)
 
@@ -54,24 +57,27 @@ fit <- eBayes(fit)
 my.sig.bwm <- topTable(fit, coef = "Condition11 WT", p.value = 1 , number = Inf)
 
 my.sig.bwm$full.adj.p <- p.adjust(as.vector(my.sig.bwm$P.Value), method="BH",n=16)
+
 ```
 
 ##Limma Analysis of Day 1 vs Day 11 hyp
 ```{r}
-myvars_hyp <- c("Condition","t.h.a1","t.h.t1","t.h.t2","t.h.i")
+myvars_hyp <- c("Condition","t.h.a1","t.h.t1","t.h.t2","t.h.i", "t.h.tm")
 data_mito_animal_matrix_al_yo_h <- data_mito_animal_matrix_al_yo[myvars_hyp]
 data_mito_animal_matrix_al_yo_h <- data_mito_animal_matrix_al_yo_h[data_mito_animal_matrix_al_yo_h$t.h.a1 != "#N/A",]
 data_mito_animal_matrix_al_yo_h$t.h.a1 <- as.numeric(data_mito_animal_matrix_al_yo_h$t.h.a1)
 data_mito_animal_matrix_al_yo_h$t.h.t1 <- as.numeric(data_mito_animal_matrix_al_yo_h$t.h.t1)
 data_mito_animal_matrix_al_yo_h$t.h.t2 <- as.numeric(data_mito_animal_matrix_al_yo_h$t.h.t2)
 data_mito_animal_matrix_al_yo_h$t.h.i <- as.numeric(data_mito_animal_matrix_al_yo_h$t.h.i)
+data_mito_animal_matrix_al_yo_h$t.h.tm <- as.numeric(data_mito_animal_matrix_al_yo_h$t.h.tm)
 
-data_mito_animal_matrix_al_yo_h_sum <- aggregate(data_mito_animal_matrix_al_yo_h[,2:5], by=list(Condition=data_mito_animal_matrix_al_yo_h$Condition), FUN=mean)
+data_mito_animal_matrix_al_yo_h_sum <- aggregate(data_mito_animal_matrix_al_yo_h[,2:6], by=list(Condition=data_mito_animal_matrix_al_yo_h$Condition), FUN=mean)
 
 h_a1_logFC <- log(data_mito_animal_matrix_al_yo_h_sum[2,2]/data_mito_animal_matrix_al_yo_h_sum[1,2])
 h_t1_logFC <- log(data_mito_animal_matrix_al_yo_h_sum[2,3]/data_mito_animal_matrix_al_yo_h_sum[1,3])
 h_t2_logFC <- log(data_mito_animal_matrix_al_yo_h_sum[2,4]/data_mito_animal_matrix_al_yo_h_sum[1,4])
 h_i_logFC <- log(data_mito_animal_matrix_al_yo_h_sum[2,5]/data_mito_animal_matrix_al_yo_h_sum[1,5])
+h_tm_logFC <- log(data_mito_animal_matrix_al_yo_h_sum[2,6]/data_mito_animal_matrix_al_yo_h_sum[1,6])
 
 design <- model.matrix(~Condition, data=data_mito_animal_matrix_al_yo_h)
 
@@ -86,20 +92,22 @@ my.sig.h$full.adj.p <- p.adjust(as.vector(my.sig.h$P.Value), method="BH",n=16)
 
 ##Limma Analysis of Day 1 vs Day 11 pm
 ```{r}
-myvars_pm <- c("Condition","pm.a1","pm.t1","pm.t2","pm.i")
+myvars_pm <- c("Condition","pm.a1","pm.t1","pm.t2","pm.i","pm.tm")
 data_mito_animal_matrix_al_yo_pm <- data_mito_animal_matrix_al_yo[myvars_pm]
 data_mito_animal_matrix_al_yo_pm <- data_mito_animal_matrix_al_yo_pm[data_mito_animal_matrix_al_yo_pm$pm.a1 != "#N/A",]
 data_mito_animal_matrix_al_yo_pm$pm.a1 <- as.numeric(data_mito_animal_matrix_al_yo_pm$pm.a1)
 data_mito_animal_matrix_al_yo_pm$pm.t1 <- as.numeric(data_mito_animal_matrix_al_yo_pm$pm.t1)
 data_mito_animal_matrix_al_yo_pm$pm.t2 <- as.numeric(data_mito_animal_matrix_al_yo_pm$pm.t2)
 data_mito_animal_matrix_al_yo_pm$pm.i <- as.numeric(data_mito_animal_matrix_al_yo_pm$pm.i)
+data_mito_animal_matrix_al_yo_pm$pm.tm <- as.numeric(data_mito_animal_matrix_al_yo_pm$pm.tm)
 
-data_mito_animal_matrix_al_yo_pm_sum <- aggregate(data_mito_animal_matrix_al_yo_pm[,2:5], by=list(Condition=data_mito_animal_matrix_al_yo_pm$Condition), FUN=mean)
+data_mito_animal_matrix_al_yo_pm_sum <- aggregate(data_mito_animal_matrix_al_yo_pm[,2:6], by=list(Condition=data_mito_animal_matrix_al_yo_pm$Condition), FUN=mean)
 
 pm_a1_logFC <- log(data_mito_animal_matrix_al_yo_pm_sum[2,2]/data_mito_animal_matrix_al_yo_pm_sum[1,2])
 pm_t1_logFC <- log(data_mito_animal_matrix_al_yo_pm_sum[2,3]/data_mito_animal_matrix_al_yo_pm_sum[1,3])
 pm_t2_logFC <- log(data_mito_animal_matrix_al_yo_pm_sum[2,4]/data_mito_animal_matrix_al_yo_pm_sum[1,4])
 pm_i_logFC <- log(data_mito_animal_matrix_al_yo_pm_sum[2,5]/data_mito_animal_matrix_al_yo_pm_sum[1,5])
+pm_tm_logFC <- log(data_mito_animal_matrix_al_yo_pm_sum[2,6]/data_mito_animal_matrix_al_yo_pm_sum[1,6])
 
 design <- model.matrix(~Condition, data=data_mito_animal_matrix_al_yo_pm)
 
@@ -114,23 +122,22 @@ my.sig.pm$full.adj.p <- p.adjust(as.vector(my.sig.pm$P.Value), method="BH",n=16)
 
 ##Limma Analysis of Day 1 vs Day 9 germ
 ```{r}
-myages_g <- c("1","9")
-data_mito_animal_matrix_al_yo_nine <- subset(data_mito_animal_matrix_al, Age%in%myages_g)
-
-myvars_g <- c("Condition","g.a1","g.t1","g.t2","g.i")
-data_mito_animal_matrix_al_yo_g <- data_mito_animal_matrix_al_yo_nine[myvars_g]
+myvars_g <- c("Condition","g.a1","g.t1","g.t2","g.i","g.tm")
+data_mito_animal_matrix_al_yo_g <- data_mito_animal_matrix_al_yo[myvars_g]
 data_mito_animal_matrix_al_yo_g <- data_mito_animal_matrix_al_yo_g[data_mito_animal_matrix_al_yo_g$g.a1 != "#N/A",]
 data_mito_animal_matrix_al_yo_g$g.a1 <- as.numeric(data_mito_animal_matrix_al_yo_g$g.a1)
 data_mito_animal_matrix_al_yo_g$g.t1 <- as.numeric(data_mito_animal_matrix_al_yo_g$g.t1)
 data_mito_animal_matrix_al_yo_g$g.t2 <- as.numeric(data_mito_animal_matrix_al_yo_g$g.t2)
 data_mito_animal_matrix_al_yo_g$g.i <- as.numeric(data_mito_animal_matrix_al_yo_g$g.i)
+data_mito_animal_matrix_al_yo_g$g.tm <- as.numeric(data_mito_animal_matrix_al_yo_g$g.tm)
 
-data_mito_animal_matrix_al_yo_g_sum <- aggregate(data_mito_animal_matrix_al_yo_g[,2:5], by=list(Condition=data_mito_animal_matrix_al_yo_g$Condition), FUN=mean)
+data_mito_animal_matrix_al_yo_g_sum <- aggregate(data_mito_animal_matrix_al_yo_g[,2:6], by=list(Condition=data_mito_animal_matrix_al_yo_g$Condition), FUN=mean)
 
 g_a1_logFC <- log(data_mito_animal_matrix_al_yo_g_sum[2,2]/data_mito_animal_matrix_al_yo_g_sum[1,2])
 g_t1_logFC <- log(data_mito_animal_matrix_al_yo_g_sum[2,3]/data_mito_animal_matrix_al_yo_g_sum[1,3])
 g_t2_logFC <- log(data_mito_animal_matrix_al_yo_g_sum[2,4]/data_mito_animal_matrix_al_yo_g_sum[1,4])
 g_i_logFC <- log(data_mito_animal_matrix_al_yo_g_sum[2,5]/data_mito_animal_matrix_al_yo_g_sum[1,5])
+g_tm_logFC <- log(data_mito_animal_matrix_al_yo_g_sum[2,6]/data_mito_animal_matrix_al_yo_g_sum[1,6])
 
 design <- model.matrix(~Condition, data=data_mito_animal_matrix_al_yo_g)
 
@@ -138,7 +145,7 @@ fit <- lmFit(t(data_mito_animal_matrix_al_yo_g[,-1]), design)
 fit <- eBayes(fit)
 #p.value.g
 
-my.sig.g <- topTable(fit, coef = "Condition9 WT", p.value = 1 , number = Inf)
+my.sig.g <- topTable(fit, coef = "Condition11 WT", p.value = 1 , number = Inf)
 
 my.sig.g$full.adj.p <- p.adjust(as.vector(my.sig.g$P.Value), method="BH",n=16)
 ```
@@ -147,7 +154,18 @@ my.sig.g$full.adj.p <- p.adjust(as.vector(my.sig.g$P.Value), method="BH",n=16)
 ```{r}
 Results_al_yo <- rbind(my.sig.bwm, my.sig.h, my.sig.pm, my.sig.g)
 Results_al_yo <- Results_al_yo[order(row.names(Results_al_yo), decreasing=FALSE),]
-Results_al_yo$actualLogFC <- c(g_a1_logFC, g_i_logFC, g_t1_logFC, g_t2_logFC, pm_a1_logFC, pm_i_logFC, pm_t1_logFC, pm_t2_logFC, mus_a1_logFC, mus_i_logFC, mus_t1_logFC, mus_t2_logFC, h_a1_logFC, h_i_logFC, h_t1_logFC, h_t2_logFC)
+Results_al_yo$actualLogFC <- c(g_a1_logFC, g_i_logFC, g_t1_logFC, g_t2_logFC, g_tm_logFC, pm_a1_logFC, pm_i_logFC, pm_t1_logFC, pm_t2_logFC, pm_tm_logFC, mus_a1_logFC, mus_i_logFC, mus_t1_logFC, mus_t2_logFC, mus_tm_logFC, h_a1_logFC, h_i_logFC, h_t1_logFC, h_t2_logFC, h_tm_logFC)
+
+makeStars <- function(x){
+  stars <- c("****", "***", "**", "*", "ns")
+  vec <- c(0, 0.0001, 0.001, 0.01, 0.05, 1)
+  i <- findInterval(x, vec)
+  stars[i]
+}
+
+Results_al_yo$stars <- makeStars(Results_al_yo$adj.P.Val)
+
+write.table(Results_al_yo, file="stat_summary yal oal.csv")
 
 #pdf(paste(Sys.Date(), " WT Age VP.pdf"))
 ggplot(Results_al_yo, aes(x=actualLogFC, y=-log10(full.adj.p)))+

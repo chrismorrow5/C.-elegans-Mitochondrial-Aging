@@ -510,3 +510,27 @@ mydata.cor = cor(data_cor)
 corrplot(mydata.cor, method = "color")
 #dev.off()
 ```
+
+##Process Data for muscle plots
+```{r}
+data_mito_animal_muscle <- data_mito_animal[data_mito_animal$TissueFullName == "Caudal BWM",]
+data_mito_animal_muscle$Age <- as.character(data_mito_animal_muscle$Age)
+```
+
+##Plot tm line just bwm##
+```{r}
+
+#pdf(paste(Sys.Date(),"tm bwm violin.pdf"))
+  ggplot(data=data_mito_animal_muscle, aes(x=Age, y=tm))+
+  geom_point()+
+  theme_classic(base_size = 20, base_family = "")+
+  theme(legend.position = "none")+
+  ylab(bquote("B.A./NAD(P)H " *tau* "m (ns)"))+
+  xlab("Age (Days)")+
+  theme(aspect.ratio=1)+
+  theme(text=element_text(size=25))+ 
+  scale_x_discrete(limits=c("1","3","5","7","9","11"))
+  theme(legend.position="right")
+#dev.off()
+
+```

@@ -73,6 +73,13 @@ xlim(0, 14)+
 ylim(0, 14)+
 ggtitle("All Tissues")
 #dev.off()
+
+d_all <- as.data.frame(y[test])
+d_all$PredictedAge <- pred$s0 
+
+write.csv(d_all, file="all.csv")
+
+
 ```
 
 
@@ -125,6 +132,11 @@ rmse.bwm <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
 ##Plot predictions vs known values
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
+
+d_bmus <- as.data.frame(y[test])
+d_bmus$PredictedAge <- pred$s0 
+
+write.csv(d_bmus, file="bwm.csv")
 
 #pdf("bwm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
@@ -191,6 +203,8 @@ d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
 
+write.csv(d.dr, file="drbwm.csv")
+
 #pdf("bwm dr.pdf")
 ggplot(NULL)+
   geom_point(data=d.dr, aes(x=y.dr+0.22, y=PredictedAge, color="eat-2"))+
@@ -234,6 +248,11 @@ d.lmhm <- as.data.frame(y.lmhm)
 d.lmhm$PredictedAge <- pred.lmhm$s0
 d.lmhm$ActualAge <- d.lmhm$y.lmhm
 
+lmhm_d <- as.data.frame(d.lmhm$y.lmhm)
+lmhm_d$PredictedAge <- pred.lmhm$s0 
+
+write.csv(lmhm_d, file="lmhm.csv")
+
 #pdf("bwm lmhm.pdf")
 ggplot(d.lmhm, aes(x=ActualAge, y=PredictedAge))+
   theme_classic(base_size = 30, base_family = "")+
@@ -244,6 +263,57 @@ ggplot(d.lmhm, aes(x=ActualAge, y=PredictedAge))+
   theme(aspect.ratio=1)+
   ggtitle("BWM")
 #dev.off()
+
+#############
+#############
+
+#############
+#############
+#############
+#############
+#############
+#############
+##Predict age in additional mutants
+
+data.long <- read.csv("C:/Users/cmorc/OneDrive - Harvard University/Projects/Metabolic Aging Atlas/C.-elegans-Mitochondrial-Aging/Age Prediction/longevitymutantdata.csv")
+
+##Scale DR with WT scaling parameters
+data.long$a1 <- (data.long$a1-data_mus_a1_mean)/data_mus_a1_sd
+data.long$t1 <- (data.long$t1-data_mus_t1_mean)/data_mus_t1_sd
+data.long$t2 <- (data.long$t2-data_mus_t2_mean)/data_mus_t2_sd
+data.long$i<- log(as.numeric(data.long$i))
+data.long$i <- (data.long$i-data_mus_i_mean)/data_mus_i_sd
+data.long <- data.long[,c("Group","a1","t1","t2","i")]
+
+x.long <- model.matrix(Group ∼ . , data.long) [ , -1]
+y.long <- data.long$Group
+test.long <- 1:nrow(x.long)
+
+ridge.pred.long <- predict(ridge.mod.bwm , s = 0.22, newx = x.long[test.long , ])
+
+pred.long <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.long[test.long , ]))
+
+d.long <- as.data.frame(y.long)
+d.long$PredictedAge <- pred.long$s0
+d.long$ActualAge <- d.long$y.long
+
+long_d <- as.data.frame(d.long$y.long)
+long_d$PredictedAge <- pred.long$s0 
+
+write.csv(long_d, file="long.csv")
+
+#pdf("bwm long.pdf")
+#ggplot(d.long, aes(x=ActualAge, y=PredictedAge))+
+ # theme_classic(base_size = 30, base_family = "")+
+  #geom_point()+
+  #ylim(0, 14)+
+  #ylab("Predicted Age")+
+  #xlab(element_blank())+
+  #theme(aspect.ratio=1)+
+  #ggtitle("BWM")
+#dev.off()
+
+
 ```
 
 
@@ -296,6 +366,11 @@ rmse.pm <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
 ##Plot predictions vs known values
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
+
+d_pm <- as.data.frame(y[test])
+d_pm$PredictedAge <- pred$s0 
+
+write.csv(d_pm, file="pm.csv")
 
 #pdf("pm.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
@@ -362,6 +437,8 @@ pred.dr <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.dr[
 d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
+
+write.csv(d.dr, file="drpm.csv")
 
 #pdf("pm dr.pdf")
 ggplot(NULL)+
@@ -437,6 +514,11 @@ rmse.hyp <- sqrt(cv.out$cvm[cv.out$lambda == cv.out$lambda.min])
 d <- as.data.frame(y[test])
 d$PredictedAge <- pred$s0 
 
+d_h <- as.data.frame(y[test])
+d_h$PredictedAge <- pred$s0 
+
+write.csv(d_h, file="h.csv")
+
 #pdf("hyp.pdf")
 ggplot(d, aes(x=y[test], y=PredictedAge))+
 theme_classic(base_size = 30, base_family = "")+
@@ -502,6 +584,8 @@ pred.dr <- as.data.frame(predict(ridge.mod.bwm , type = "response", newx = x.dr[
 d.dr <- as.data.frame(y.dr)
 d.dr$PredictedAge <- pred.dr$s0
 d.dr$ActualAge <- d.dr$y.dr
+
+write.csv(d.dr, file="drh.csv")
 
 #pdf("hyp dr.pdf")
 ggplot(NULL)+
